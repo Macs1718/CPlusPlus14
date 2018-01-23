@@ -557,6 +557,8 @@ Dans cet exemple, nous allons définir un type de tas ( FILO ) contenant des don
 # include <iostream>
 # include <string>
 
+/** Définition générale du tas contenant
+    n éléments de types distincts */
 template<typename T1, typename ...Tn>
 class hheap
 {
@@ -581,6 +583,7 @@ private:
 
 struct void_t {};
 
+/** On définit ce qu'est un tas vide */
 template<> class hheap<void_t>
 {
 public:
@@ -593,6 +596,7 @@ public:
     bool is_empty() const { return true; }
 };
 
+/** Et un tas contenant un seul élément */
 template<typename T1> class hheap<T1>
 {
 public:
@@ -636,6 +640,7 @@ template<typename Heap> std::ostream& print(std::ostream& out, const Heap& heap)
 	out << heap.get_value() << ",";
 	return print(out, heap.pop());
 }
+
 template<typename T>
 std::ostream& print(std::ostream& out, const hheap<T>& heap)
 {
@@ -659,7 +664,7 @@ int main()
 Quelques remarques sur cette classe :
 \begin{enumerate}
 \item À chaque \verb@pop@ ou chaque \verb@push@, le type du tas est modifié, et doit donc être affecté à une nouvelle variable, puisque
-C++ ne supporte pas à l'exécution du programme compilé les types dynamiques;
+C++ ne supporte pas les types dynamiques lors de l'exécution dynamique du programme;
 \item En particuliers, il n'est pas possible de faire une boucle ( de type \verb$for$ ou \verb$while$ ) comme pour le tas de la STL,
 et on doit donc remplacer les boucles par des appels récursifs;
 \item De même, les données de notre tas ne peuvent être instanciées que statiquement, et non dynamiquement durant l'exécution du programme :
