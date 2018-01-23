@@ -1,0 +1,1273 @@
+\documentclass[handout,10pt]{beamer}
+\usetheme{Copenhagen}
+\usepackage{amsmath,amsfonts,graphicx}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\setitemize{label=\usebeamerfont*{itemize item}%
+            \usebeamercolor[fg]{itemize item}
+            \usebeamertemplate{itemize item}}
+            
+\setlist[description]{style = multiline, labelwidth = 60pt}
+
+\usepackage{tikz} % Required for drawing custom shapes
+\usetikzlibrary{shadows, arrows, decorations.pathmorphing, fadings, shapes.arrows, positioning, calc, shapes, fit, matrix}
+
+\usepackage{polyglossia}
+
+
+\definecolor{lightblue}{RGB}{0,200,255} 
+\definecolor{paper}{RGB}{245,237,187}
+\definecolor{ocre}{RGB}{243,102,25} % Define the orange color used for highlighting throughout the book
+\definecolor{BurntOrange}{RGB}{238,154,0}
+\definecolor{OliveGreen}{RGB}{188,238,104}
+\definecolor{DarkGreen}{RGB}{0,128,0}
+\definecolor{BrickRed}{RGB}{238,44,44}
+\definecolor{Tan}{RGB}{210,180,140}
+\definecolor{Aquamarine}{RGB}{127,255,212}
+\definecolor{NavyBlue}{RGB}{0,64,128}
+
+\lstdefinestyle{customcpp}{
+    breaklines=true,
+    frame=shadow,
+    xleftmargin=\parindent,
+    language=C++,
+    showstringspaces=false,
+    basicstyle=\tiny\ttfamily,
+    keywordstyle=\bfseries\color{green!40!black},
+    commentstyle=\itshape\color{purple!40!black},
+    identifierstyle=\color{blue},
+    stringstyle=\color{orange!60!black},
+}
+
+\newcommand*\lstinputpath[1]{\lstset{inputpath=#1}}
+\lstinputpath{./exemples/3_Template}
+\newcommand{\includepartcode}[4][cpp]{
+\lstinputlisting[escapechar=, firstline=#3, lastline=#4, style=custom#1]{#2}
+}
+
+\title[C++\hspace{2em}]{Templates avec C++ 2011}
+\author[Xavier JUVIGNY]{Xavier JUVIGNY}
+\date{\today}
+
+\institute{ONERA}
+
+\begin{document}
+
+\lstset{language=C++,
+  frame=single,
+  backgroundcolor=\color{paper},
+  basicstyle=\tiny\ttfamily,
+  keywordstyle=\color{blue}\tiny\ttfamily,
+  commentstyle=\color{red}\tiny\ttfamily,
+  stringstyle=\color{brown}\tiny\ttfamily,
+  keepspaces=true,
+  showspaces=false,
+  showstringspaces=false,
+  tabsize=4
+}
+
+\begin{frame}
+ \titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Plan du cours}
+\tableofcontents
+\end{frame}
+
+\section{C++ et généricité}
+
+\begin{frame}[fragile]{Généricité}
+\tiny
+\begin{block}{Définition}
+\begin{itemize}
+\item Générer du code à partir d'un patron et de divers paramètres;
+\item {\color{blue}Généricité fonctionelle} : un patron de fonction utilisé pour des types différents. Exemple en C : \lstinline$#define MAX(a,b) ((a)>(b) ? (a) : (b))$
+\item Macros outil primaire, peut être dangereux. Que penser de \lstinline$MAX(i++,j)$ ?
+\item {\color{blue}Généricité structurelle} : une liste d'entier même gestion qu'une liste de réels, de vecteurs, de capteurs,etc.
+\item Difficile à gérer par macro;
+\item Solution la plus générale : générer code à partir d'un langage à balise ou d'un DSL ( Domain Specific Language ).
+\end{itemize}
+\end{block}
+
+\begin{block}{Généricité en C++}
+\begin{itemize}
+\item Généricité en C++ définie à partir de patrons ( comme un patron de couture : template )
+\item \textbf{Déclaration} : Mot clef C++ \lstinline$template$ suivi de la liste des paramètres variables du patron entre les signes \lstinline$<$
+et \lstinline$>$, suivi de la définition de la fonction ou de la classe patron;
+\item \textbf{Instanciation} : Soit les paramètres templates peuvent être déduits par le compilateur ( pour les fonctions et en C++17, pour les classes ), soit passés entre les signes \lstinline$<$ et \lstinline$>$
+\item Lors d'une instanciation de template, le compilateur doit avoir accès à la déclaration mais aussi à la définition de la fonction ou de la classe : impossible de compiler une fonction ou une classe template sans l'instancier pour des paramètres donnés.
+\end{itemize}
+\end{block}
+
+\end{frame}
+
+\begin{frame}[fragile]{Généricité fonctionnelle}
+\tiny
+\begin{block}{Généricité fonctionnelle en C++}
+\begin{itemize}
+\item Définie un modèle de fonction ou de méthode de classe;
+\item \textbf{Syntaxe} : modèle précédé du mot clef \lstinline$template$ et de la liste des paramètres du patron entre les signes 
+\lstinline$<$ et \lstinline$>$;
+\item {\color{blue}Exemple de fonction retournant le max de deux valeurs de type comparable}
+\begin{lstlisting}
+template<typename K> inline K max_val( const K& a, const K& b ) {
+    return (a > b ? a : b ); }
+int main() {
+    std::cout << max_val(1,3) << max_val(1.2,4.3-2.1) << max_val('t','l') << std::endl;
+    ... }
+\end{lstlisting}
+\item \lstinline$K$ est le paramètre du template : \lstinline$typename$ précise qu'ici $K$ est un paramètre représentant un type
+de variable;
+\item Dans ce cas simple, lors de l'instanciation ( et de l'appel ) d'une fonction à partir du template, le paramètre \lstinline$K$ déduit du type de paramètre passé à la fonction;
+\item Cependant, \lstinline$max_val(1.3.5)$ ne compilera pas, car types différents, idem pour \lstinline$max_val("tintin","milou")$ ( \lstinline$char[6]$ et \lstinline$char[5]$ )
+\item On peut passer deux paramètres types :
+\begin{lstlisting}
+template<typename K1,typename K2> auto max_val(const K1& a,const K2& b){return (a>b?a:b);}
+\end{lstlisting}
+\item Il faut que les valeurs de types \lstinline$K1$ et \lstinline$K2$ soient comparables : \lstinline$max_val(1.3.5)$  et \lstinline$max_val("tintin","milou")$ compilent dans ce cas.
+\item On renvoit \lstinline$auto$ car déduction de type non trivial avant instanciation de la fonction templatée;
+\item \lstinline$max_val("tintin","milou")$ peut renvoyer la valeur \lstinline$"milou"$ car comparaison sur adresse chaîne de caractère.
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Template et surcharge de fonctions}
+\tiny
+\begin{block}{Surcharge de fonctions}
+\begin{itemize}
+\item On a vu que la fonction template \lstinline$max_val$ ne renvoie pas la bonne chaîne de caractère car n'effectue pas la bonne comparaison;
+\item C++ autorise qu'on définisse la fonction \lstinline$max_value$ pour les chaînes de caractère de type \lstinline$char*$ :
+\begin{lstlisting}
+std::string max_value( const char* s1, const char* s2 )
+{
+    if ( strcmp(s1,s2) > 0 ) return std::string(s1); else return std::string(s2);
+}
+\end{lstlisting}
+\item C++ n'instanciera pas une fonction template si une fonction non template existe déjà pour un ou des types de variables données;
+\item On parle alors de {\bf\color{red}spécialisation template};
+\item Dans notre cas, la fonction \lstinline$max_value$, grâce à la spécialisation, renvoie bien maintenant la bonne chaîne de caractère...
+\item \textbf{\underline{Remarque}} : Bien que la fonction soit spécialisée pour des \lstinline$const char*$, elle est également appelée pour des \lstinline$char[5]$ ou \lstinline$char[6]$ car ces types sont trivialement convertissables en pointeur ( sans créer une variable temporaire pour la conversion ).
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Paramètres template}
+\tiny
+\begin{block}{Les types des paramètres}
+Le type du paramètre template ( qui devra être passé ensuite en constante ) peut être :
+\begin{itemize}
+\item  un \textbf{type générique} : Paramètre est précédé du mot clef \lstinline$typename$ ( recommandé ) ou \lstinline$class$;
+\item un \textbf{type intégral} : entier, booléen, mais aussi pointeur, pointeur de fonctions, références, etc\ldots mais pas de type réel, etc\ldots
+\item Un paramètre référence non initialisable avec donnée temporaire ou valeur immédiate lors de l'instanciation.
+\item Comme pour les fonctions, il est possible de passer des valeurs par défaut aux paramètres template.
+\item Les paramètres ayant des valeurs par défaut doivent être déclarés à la fin de la liste des paramètres template;
+\end{itemize}
+\end{block}
+
+\begin{block}{Cas du pointeur nul}
+Considérons le code suivant :
+\begin{lstlisting}
+template<typename T> void display_pointer(const T* pt) {
+    std::cout << "Pointer at address " << pt << " with elements of size " << sizeof(T) << std::endl;
+}
+...
+double x; int i;
+display_pointer(&x); display_pointer(&i);
+display_pointer(NULL); display_pointer(nullptr); // Les deux appels ne compilent pas !
+\end{lstlisting}
+Il faut spécialiser la fonction pour le pointeur nul à l'aide du type \lstinline$std::nullptr_t$ :
+\begin{lstlisting}
+void display_pointer( std::nullptr_t pt ) {
+  std::cout << "Null pointer !" << std::endl;
+}
+display_pointer(nullptr); // Ok, compile maintenant
+display_pointer(NULL); // Non portable, non compilable avec certains compilateurs
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Template de template}
+\tiny
+\begin{exampleblock}{Principe}
+\begin{itemize}
+\item Le paramètre template possède lui-même un paramètre template;
+\item Pas possible d'avoir un template de template de template dans les normes actuelles du C++;
+\end{itemize}
+\includepartcode{template_of_template.cpp}{11}{19}
+\begin{itemize}
+\item Le paramètre de la fonction au dessus est le type de container, pas le type des valeurs qu'il contient ou le type d'allocation nécessaire pour ces valeurs;
+\item Il est important de passer deux paramètres templates au paramètre template C pour utiliser un type \lstinline$vector$ car
+ce dernier réclame deux paramètres templates ( un pour le type de valeur contenu, l'autre pour le type d'allocation );
+\item On peut utiliser des templates de template également pour les structures.
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Spécialisation template}
+\tiny
+\begin{block}{Spécialisation template}
+Possibilité de spécialiser un template pour des valeurs particulières de ses paramètres :
+\begin{lstlisting}
+template<long n> long fact() { return n * fact<n-1>(); }
+template<> long fact<0>() { return 1L; }
+
+std::cout << fact<10>() << std::endl; // L'évaluation de la factorielle se fait à la compilation...
+\end{lstlisting}
+\textbf{\underline{Remarque}} : l'instanciation de la fonction template oblige ici à passer les paramètres entre les symboles
+\lstinline$<$ et \lstinline$>$ car l'entier ne peut se déduire des paramètres passés à la fonction templatée.
+\end{block}
+
+\begin{block}{Spécialisation partielle}
+Supposons qu'on veuille calculer la dérivée directionnelle sur un corps $K$ d'une fonction $f$.
+%\[
+%\frac{df}{dh} = \lim_{\varepsilon\rightarrow 0} \frac{f(x+\varepsilon h) - f(x)}{\varepsilon \|h\|}
+%\]
+Une réalisation possible en template est la suivante :
+\begin{lstlisting}
+template<typename Func, typename K> K df_s_dh(const Func& f,const K& h,const K& x,
+                                              const decltype((std::abs(h))) eps=1.E-6){
+    auto nrm_h = std::abs(h); // On devrait traiter erreur si nrm_h < error_epsilon
+    K dh = eps*h/nrm_h;
+    return K(1./eps) * (f(x+dh) - f(x));
+}\end{lstlisting}
+Formule générale, mais pas optimale pour les réels. On spécialise donc la fonction pour les doubles par exemple :
+\begin{lstlisting}
+template<typename Func> double df_s_dh(const Func& f,const double& h,const double& x) {    
+    return (1./h)*(f(x+h)-f(x));
+}\end{lstlisting}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Spécialisation template et constexpr ( C++14 )}
+\tiny
+\begin{block}{Template et constexpr}
+\begin{itemize}
+\item À partir de C++14, il est possible de templater les expressions constantes
+\item Permet de définir des valeurs associées à des types génériques;
+\item Mais aussi de calculer des expressions à l'aide des templates;
+\end{itemize}
+\begin{lstlisting}
+template<typename I, long n> constexpr I factoriel = I(n) * factoriel<I,n-1>;
+template<typename I> constexpr I factoriel<I,0> = I(1);
+...
+std::cout << factoriel<double,20> << std::endl;
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Spécialisation template : principe de fonctionnement}
+\tiny
+\begin{block}{Principe d'instanciation d'un compilateur pour les spécialisations template}
+\begin{itemize}
+\item Le compilateur recherche si une fonction sans paramètre template est définie et l'instancie le cas échéant;
+\item Si ce n'est pas le cas, recherche si une version partiellement spécialisée est définie et  peut être utilisée sans échec
+par le compilateur. Si c'est le cas, le compilateur instancie la fonction à partir de cette spécialisation partielle.
+\item Enfin, en dernier lieu, le compilateur cherche à instancier la fonction à partir d'une version template générale ( il peut
+y en avoir plusieurs ). Si cela se traduit par un échec, le compilateur renvoie une erreur;
+\item Le comportement du compilateur est largement utilisé par les programmeurs C++ au travers des techniques SFINAE qu'on verra plus loin;
+\item Cela permet entre autre de faire de l'introspection avec C++.
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Spécialisations partielles}
+\begin{block}{Règles sur les spécialisations partielles}
+\begin{itemize}
+\item Permet de spécialiser une fonction, une expression constante ou une classe/structure ( voir plus loin );
+\item Permet également de spécialiser selon la nature du type ( par exemple spécialiser dans le cas où c'est un pointeur );
+\item Une valeur ne peut pas être exprimée en fonction d'un paramètre template de la spécialisation :
+\begin{lstlisting}
+template<int I, int J> struct B { ... };
+template<int I> struct B<I,2*I> { ... }; // Erreur, dépendance entre paramètres templates
+\end{lstlisting}
+\item Le type d'une des valeurs de la spécialisation ne peut pas dépendre d'un autre paramètre :
+\begin{lstlisting}
+template<typename T, T t> class B { ... };
+template<typename T> class B<T,1> { ... }; // Erreur, t dépend de T !
+\end{lstlisting}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Exercice sur les template de fonction}
+\tiny
+\begin{exampleblock}{Puissance nième}
+Calculer la puissance $n$ ième ( $n$ entier positif ) d'une valeur de type $K$ ( pouvant être aussi bien un scalaire qu'une matrice par exemple )
+\end{exampleblock}
+
+\begin{exampleblock}{Puissance nième}
+Calculer la puissance $n$ ième ( $n$ entier positif ) d'un double par succession d'appels récursifs résolus à la compilation;
+\end{exampleblock}
+
+\begin{exampleblock}{Norme 2D}
+Écrire une fonction calculant la norme d'un vecteur 2D sur un corps K ( réel, complexe, etc\ldots)
+\end{exampleblock}
+
+\begin{exampleblock}{Problème}
+On définit la suite de \textsl{fibraction} :
+\[
+\left\{
+\begin{array}{rcl}
+u_{1} & = & 1 \\
+u_{2} & = & 2 \\
+u_{n} & = & u_{n-2} - u_{n-1}
+\end{array}
+\right.
+\]
+Le but est de calculer $u_{32}$ à la compilation et afficher le résultat à l'exécution
+\begin{block}{Astuce}
+Les fonctions templatées ne sont générées qu'une fois pour une valeur donnée dans le cadre de la récursion.
+\end{block}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Généricté structurelle}
+\tiny
+\begin{block}{Déclaration d'une structure template}
+\begin{itemize}
+\item Déclaration et définition semblables à celles d'une fonction template
+\begin{lstlisting}
+template<paramètres templates> class|struct|union; 
+\end{lstlisting}
+\item Les méthodes peuvent être définies au sein de la déclaration ou bien à l'extérieur de la déclaration;
+\item Dans le dernier cas, elle doivent être elles-mêmes également déclarées template lors de leur définition;
+\begin{lstlisting}
+template<typename K> class A { ...
+    K func( const K& k ) const;
+};
+template<typename K> K A<K>::func( const K& k ) const { ... }
+\end{lstlisting}
+\item les chevrons $<$ et $>$ sont là pour spécifier que c'est la classe qui est template et non la méthode de la classe;
+\item De manière générale, il faudra toujours référencer une classe template avec la liste de ses paramètres, sauf si on la référence dans une méthode de la classe elle-même;
+\item Lors de l'instanciation d'une classe template, le compilateur doit avoir accès à la déclaration \textbf{et} à la définition de la classe;
+\item Il est possible d'avoir une méthode elle-même template dans une classe template.
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Généricité structurelle}
+\tiny
+\begin{exampleblock}{Exemple généricité structurelle en C++}
+\includepartcode{template_struct.cpp}{4}{28}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Généricité structurelle}
+\tiny
+\begin{exampleblock}{Exemple généricité structurelle en C++}
+\includepartcode{template_struct.cpp}{29}{52}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Organisation, production de code avec les templates}
+\tiny
+\begin{block}{Problématique}
+\begin{itemize}
+\item À chaque instanciation d'une classe template, on génère le code adéquat;
+\item Il arrive souvent de regénérer plusieurs fois le même code pour le même jeu de paramètres templates;
+\item Le temps de production ( compilation ) risque de devenir une étape lourde et longue sur des codes importants de type industriel;
+\item Il faut donc essayer de générer une classe template qu'une seule fois pour un jeu de paramètre donné.
+\end{itemize}
+\end{block}
+
+\begin{exampleblock}{Solution}
+\begin{itemize}
+\item Pour instancier un template, le compilateur doit avoir accès aux définitions des méthodes;
+\item {\color{blue}Séparer en deux fichiers la déclaration et la définition ( mise en {\oe}uvre ); : \lstinline$Vecteur.hpp$ et \lstinline$Vecteur.tpp$}
+\item {\color{red}Créer un troisième fichier ( \lstinline$Vecteur$ ) incluant le fichier de déclaration et le fichier de définition};
+\item On peut instancier explicitement une structure ou une fonction template : \lstinline$template Algebra::Vecteur<double>;$
+\item {\color{blue}Créer un fichier ( \lstinline$Vecteur.cpp$ ) instanciant les classes templates avec les paramètres courants ( bibliothèque ou module)/voulus ( application )};
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Déclaration,Définition des méthodes d'une classe template}
+\tiny
+\begin{minipage}{0.43\textwidth}
+\begin{lstlisting}[caption={\tiny Vecteur.hpp}]
+namespace Algebra {
+template<typename K> class Vecteur : 
+                     public std::vector<K> {
+public:
+    using real_t=decltype( std::abs(K(0)) );
+    Vecteur( std::size_t dim = 0 ) :
+          std::vector<K>(dim) {}
+    Vecteur(std::initializer_list<K> coefs);
+    Vecteur( const Vecteur& u )=default;
+    Vecteur( Vecteur&& u ) = default;
+    ~Vecteur();
+    
+    //C++ 2014
+    auto normL2() const;
+    //C++ 2011
+    real_t normL2() const;
+    Vecteur 
+    operator + (const Vecteur& u) const;
+};
+}
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}{0.53\textwidth}
+\begin{lstlisting}[caption={\tiny Vecteur.tpp}]
+namespace Algebra{
+  template<typename K> 
+  Vecteur<K>::Vecteur(std::initializer_list<K> coefs) : 
+         std::vector<K>(coefs)
+  {}
+  template<typename K> Vecteur<K>::~Vecteur() {}
+  template<typename K> 
+  Vecteur<K>::real_t Vecteur<K>::normL2() const {
+      Vecteur<K>::real_t nrm{0};
+      for ( const auto& val : *this ) 
+          nrm += std::norm(val);
+      return std::sqrt(nrm);
+  }
+}
+\end{lstlisting}
+\end{minipage}
+\begin{block}{Production avec les templates}
+\begin{itemize}
+\item Les définitions ( ici fichiers \lstinline$.tpp$ ) doivent être accessibles aux parties de codes les utilisant;
+\item On peut néanmoins "précompiler" des templates pour certains paramêtres spécifiques et ne pas utiliser dans ce cas
+le fichier de définition.
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Architecture fichiers pour bien gérer les templates}
+\tiny
+\begin{minipage}{0.35\textwidth}
+\begin{tikzpicture}
+\node[draw] (decl) {\lstinline$Vecteur.hpp$};
+\node[draw, right = 4ex of decl.east] (def) {\lstinline$Vecteur.tpp$};
+\node[draw, below = 6em of decl.south east] (inc) {\lstinline$Vecteur$};
+\node[draw, right = 7ex of inc.east] (gen) {\lstinline$Vecteur.cpp$};
+\draw[->, red] (inc) -- node[sloped,above]{\tiny include} (decl);
+\draw[->, red] (inc) -- node[sloped,above]{\tiny include} (def);
+\draw[->, red] (gen) -- node[above]{\tiny include} (inc);
+\end{tikzpicture}
+\end{minipage}\hfill
+\begin{minipage}{0.63\textwidth}
+\begin{block}{Description des fichiers}
+\begin{itemize}
+\item Fichier de déclaration \lstinline$Vecteur.hpp$
+\begin{lstlisting}
+namespace Algebra { 
+    template<typename K> class Vecteur { ... }; }
+\end{lstlisting}
+\item Fichier de définition \lstinline$Vecteur.tpp$
+\begin{lstlisting}
+namespace Algebra {
+  template<typename K> Vecteur<K>::Vecteur(...) {...} }
+\end{lstlisting}
+\item Fichier d'inclusion ( pour générer nouveaux types de vecteurs ) \lstinline$Vecteur$
+\begin{lstlisting}
+#include "Vecteur.hpp"
+#include "Vecteur.tpp"
+\end{lstlisting}
+\item Fichier d'instanciation de types "standards" \lstinline$Vecteur.cpp$
+\begin{lstlisting}
+# include "Vecteur"
+template Algebra::Vecteur<double>;
+template Algebra::Vecteur<float>;
+\end{lstlisting}
+\end{itemize}
+\end{block}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]{Référence universelle}
+\tiny
+ \begin{block}{Problématiques}
+  \begin{itemize}
+  \item Considérons le code suivant :
+\begin{lstlisting}
+template<typename K> class Wrapper : public Base_wrapper
+{ public:
+    Wrapper( K& a1 ) : m_obj(a1,a1) {}
+    Wrapper( K& a1, K& a2) : m_obj(a1,a2) {}
+  private:
+    K m_obj; };
+ Wrapper<std::pair<double>> p{3., 4.};
+\end{lstlisting}
+\item Le constructeur de \lstinline$Wrapper$ a besoin de passer une liste arbitraire d'arguments à l'objet de type \lstinline$K$;
+\item Le code ne compile pas car on ne peut pas passer des valeurs par référence;
+\item Une solution est de passer plutôt des références constantes, mais si l'objet K demande une référence non constante ?
+\item On peut alors convertir a1 et a2 en référence non constante : \lstinline$const_cast<K&>(a1)$;
+\item Problème:  maintenant, Wrapper peut modifier des valeurs constantes ( au travers de l'objet K ).
+\item Une solution qui marche : considérer toutes les combinaisons de références constantes ou non :
+\begin{lstlisting}
+template<typename K> class Wrapper : public Base_wrapper
+{public:
+  ...
+  Wrapper( K& a1, K& a2) : m_obj(a1,a2) {}
+  Wrapper( const K& a1, K& a2) : m_obj(a1, a2) {}
+  Wrapper( K& a1, const K& a2) : m_obj(a1, a2) {}
+  Wrapper( const K& a1, const K& a2 ) : m_obj(a1, a2) {} ... \end{lstlisting}
+\item Problème : $2^{N}$ combinaisons à écrire ( N = nbre arguments )
+ \end{itemize}
+ \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Référence universelle}
+\tiny
+\begin{block}{Référence universelle}
+\begin{lstlisting}
+Wrapper( K&& a1 ) : m_obj(a1) {}
+Wrapper( K&& a1, K&& a2 ) : m_obj(a1, a2) {}
+\end{lstlisting}
+\begin{itemize}
+ \item Passage d'une variable : passée par référence
+ \item Passage d'une valeur   : passée par rvalue ( id. référence constante )
+\end{itemize}
+\end{block}
+\begin{block}{Forwarding}
+\begin{itemize}
+\item On veut parfois garder le type de passage d'un argument ( pour faire un retour par déplacement par exemple ou si la fonction appelée demande une référence universelle );
+\begin{lstlisting}
+Wrapper( K&& a1 ) : m_obj(std::forward<K>(a1)) {}
+\end{lstlisting}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Méthodes templates}
+\tiny
+\begin{block}{Template de méthodes}
+\begin{itemize}
+ \item Dans une classe, on peut définir des méthodes template;
+ \item La classe peut-être template ou non.
+\end{itemize}
+\begin{lstlisting}
+class Matrix {
+    Matrix( std::size_t& nrow, std::size_t& ncol );
+    template<typename InputIterator>
+    Matrix( std::size_t& nrow, std::size_t& ncol, const InputIterator& it );
+    template<typename Vec> Vec multVec( const Vec& u ) {
+        assert(u.size() != nb_columns());
+        Vec v(nb_rows());
+        for ( int i = 0; i < nb_rows(); ++ i ) {
+            v[i] = 0.;
+            for ( int j = 0; j < nb_columns(); ++j ) {
+                v[i] += (*this)(i,j) * u[j];
+            }
+        }
+        return v;
+    }
+    
+    ...
+};
+\end{lstlisting}
+\end{block}
+
+\end{frame}
+
+\begin{frame}[fragile]{Exercices}
+\tiny
+\begin{exampleblock}{Matrice de rotation 2D}
+\'Ecrire une classe représentant une rotation 2D d'angle $\alpha$ ( le corps de base pouvant être réel ou complexe );
+\end{exampleblock}
+
+\begin{exampleblock}{Polynôme}
+Écrire une classe représentant un polynôme ( l'anneau considéré pouvant être non commutatif comme pour les matrices ou les quaternions par exemple ).
+\begin{itemize}
+\item Calcul dérivée et primitive;
+\item Évaluation du polynôme en une valeur;
+\item Addition, soustraction et multiplication de deux polynôme
+\item Sauvegarde et affichage des polynômes.
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\section{Template avancé}
+
+\begin{frame}[fragile]{Les expressions template}
+\tiny
+\begin{alertblock}{Problématique}
+\begin{itemize}
+\item Soit une classe représentant des vecteurs algébriques : on y a programmé l'addition, le produit par un scalaire et le produit scalaire;
+\begin{lstlisting}
+template<typename K>
+class Vecteur<K> { ...
+    Vecteur operator + ( const Vecteur& u ) const;
+    K operator | ( const Vecteur& u ) const;
+    Vecteur homothetie( const K& alpha ) const;
+};
+template<typename K> Vecteur<K> operator * ( const K& alpha, const Vecteur<K>& u ) {
+    return u.homothetie(alpha); }
+\end{lstlisting}
+\item Que penser de l'expression : \lstinline$w = v - (v|u)*u$ ?
+\item Le compilateur va générer : un scalaire intermédiaire ( le produit scalaire ), un premier vecteur intermédiaire ( pour calculer
+\lstinline$(v|u)*u$, un second vecteur pour calculer \lstinline$w = v - (v|u)*u$.
+\item Le constructeur et l'opérateur de déplacement sauve un peu la mise, mais : on créer deux vecteurs intermédiaires et chaque boucle effectuant les opérations sur les vecteurs demande peu d'instructions\ldots
+\end{itemize}
+\end{alertblock}
+
+\begin{exampleblock}{Première approche : Calcul d'une factorielle par le compilateur}
+\begin{itemize}
+\item On utilise les variables templates permises par C++ 14;
+\item On exprime la factorielle sous forme de récursion sur un paramètre template entier;
+\end{itemize}
+\includepartcode{factorial_template.cpp}{3}{6}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Les expressions templates\ldots}
+\tiny
+\begin{exampleblock}{Autre exemple un peu plus complexe}
+Calcul de l'approximation entière supérieure d'une racine carrée par encadrement
+\begin{itemize}
+\item Cas un peu plus complexe : il faut utiliser d'autres variables templates intermédiaires;
+\item Qu'on peut regrouper au sein d'une structure : allège et clarifie le code;
+\end{itemize}
+\includepartcode{iroot_template.cpp}{3}{14}
+\end{exampleblock}
+
+\begin{alertblock}{Remarques}
+\begin{itemize}
+\item Pour l'intant, les exemples donnés auraient pu être programmés plus simplement à l'aide d'expressions constantes\ldots
+\item Mais les templates permettent bien plus que cela\ldots
+\end{itemize}
+\end{alertblock}
+\end{frame}
+
+\begin{frame}[fragile]{Les expressions templates\ldots}
+\tiny
+\begin{exampleblock}{Produit scalaire déroulé à la compilation}
+\begin{itemize}
+\item On va se baser sur le fait que le produit scalaire de deux vecteurs de dimension $N$ peut être calculer par le produit de deux scalaires sommé au produit scalaire de deux vecteurs de dimension $N-1$\ldots
+\item La boucle sur les éléments des deux vecteurs sera ainsi complètement déroulée par le compilateur !
+\item Plus d'appel de fonction, le produit scalaire sera directement remplacé par l'expression arithmétique correspondante.
+\end{itemize}
+\includepartcode{dotproduct_expr_template.cpp}{6}{26}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Les expressions templates\ldots}
+\tiny
+\begin{block}{expression template et arbre AST}
+\begin{itemize}
+\item Généralement, les expressions templates génèrent un arbre AST ( Abstract Syntax Tree ) à partir d'un chaînage d'opérateurs ( +, -, x, /, etc\ldots )
+\item Permet, pour les vecteurs, par exemple, d'exprimer simplement par la suite le calcul à faire sur chaque composante, sans calcul de vecteurs intermédiaires;
+\item Mise en {\oe}uvre complexe mais de nombreuses littératures sur le sujet;
+\item Il existe une librairie générale permettant "facilement" de mettre en {\oe}uvre des expressions templates : Boost.Proto d'\'Eric Niebler ;
+\item De nombreux tutorials et exposés là dessus sur internet : Serge Sanspaille (\url{http://linuxfr.org/users/serge_ss_paille/journaux/c-14-expressions-template-pour-les_nuls} et Joël Falcou ( \href{https://www.google.fr/url?sa=t&source=web&rct=j&url=https://www.youtube.com/watch%3Fv%3DIiVl5oSU5B8&ved=0ahUKEwiDlZeHlffWAhXEORoKHaRvAiMQwqsBCCEwAA&usg=AOvVaw1SAydGHQAXoJVZ-RdvW1TT}{CppCon 2014} ) ainsi que le tutorial d'Eric Niebler sur Boost.Proto ( \url{http://ericniebler.com/category/proto/} )
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Exercice sur les expressions templates}
+\tiny
+
+\begin{exampleblock}{Addition de vecteurs de dimension $N$}
+Le but de cet exercice est d'écrire une expression template qui déroulera toute la boucle pour additionner deux vecteurs
+dans un troisième vecteur.
+\begin{itemize}
+\item En s'inspirant de l'expression template permettant le produit scalaire de deux vecteurs, écrire une expression template permettant
+l'addition de deux vecteur dans un troisième.
+\item Vérifier qu'on ne génère pas de fonction si on choisit l'option d'optimisation \texttt{-O2};
+\item Essayer l'expression template en utilisant divers conteneurs ( tableaux statiques, listes, etc\ldots ).
+\end{itemize}
+\end{exampleblock}
+
+\end{frame}
+
+\begin{frame}[fragile]{Stratégies template}
+\tiny
+\begin{block}{Politique}
+\begin{itemize}
+\item À l'aide de la spécialisation, permet de changer de comportement selon le type.
+\end{itemize}
+\end{block}
+\begin{lstlisting}
+template<typename K> struct MPI_Type { static MPI_Datatype id_type() { return MPI_PACKED; } };
+template<> struct MPI_Type<short> { static MPI_Datatype id_type() { return MPI_SHORT; } };
+template<> struct MPI_Type<double> { static MPI_Datatype id_type() { return MPI_DOUBLE; } };
+...
+template<typename K> bool send( std::size_t nbItems, const K* buffer, int dest, int tag ) {
+    MPI_Send( buffer, nbItems, MPI_Type<K>::id_type(), dest, tag, MPI_COMM_WORLD);
+}
+\end{lstlisting}
+\begin{block}{SFINAE : Substitution failure is not an error}
+Permet de restreindre un template à certains types
+\begin{lstlisting}
+template<typename K> struct restrictor        {                        };
+template<>           struct restrictor<float> { typedef float  result; };
+template<>           struct restrictor<double>{ typedef double result; };
+
+template<typename Real> typename restrictor<Real>::result
+distance( K a1, K a2, K b1, K b2 ) { ... }
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Introspection par template}
+\tiny
+\begin{block}{Techniques nécessaires}
+\begin{itemize}
+\item SFINAE + constexpr
+\item Utilisation de \lstinline$std::declval<K>()$ et \lstinline$std::decltype(expr)$ :
+\begin{lstlisting}
+#include <utility>
+struct Default { int foo() { return 1; } };// Struct avec constructeur par défaut
+struct NonDefault { NonDefault(int i) {} // Struct sans constructeur par défaut
+                    int foo() { return 1; } };
+int main() {
+    decltype(Default().foo()) n1 = 1; //ok, n1 est un entier
+    decltype(NonDefault().foo()) n2 = 2;// Erreur, NonDefault n'a aucun constructeur par défaut
+    // std::declval transforme un type en référence sur obj de ce type
+    decltype(std::declval<NonDefault>().foo()) n3 = 3;// ok, n3 est un entier
+}
+\end{lstlisting}
+\end{itemize}
+\end{block}
+\begin{exampleblock}{Introspection}
+Teste si une classe possède une méthode particulière :
+\begin{lstlisting}
+template<class K> struct has_serialize {
+    template<typename C> static constexpr 
+    decltype(std::declval<C>().serialize(std::cout), bool()) test(int){
+        return true; } // symbole , évalue de gauche à droite
+    template<typename C> static constexpr bool test(...) {
+        return false; }
+    // La valeur booléenne finale évaluée par le compilateur pour savoir si 
+    // C contient une méthode serialize
+    static constexpr bool value = test<K>(int());
+};
+\end{lstlisting}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Utilisation de l'instrospection}
+\tiny
+\begin{alertblock}{Problème}
+\begin{itemize}
+\item Considérons le programme suivant :
+\begin{lstlisting}
+template<typename C> std::ostream& serialize(const C& obj, std::ostream& out) {
+  if (has_serialize<C>::value) return obj.serialize(out);
+  else return obj.fmtSave(out);
+}
+\end{lstlisting}
+\item Ne compile pas car même si \lstinline$has_serialize<C>::value$ faux à la compilation,
+il compile quand même la branche morte;
+\end{itemize}
+\end{alertblock}
+\begin{exampleblock}{Solution}
+\begin{itemize}
+\item Utiliser \lstinline$std::enable_if$ avec template:
+\begin{lstlisting}
+template<typename K> typename std::enable_if<has_serialize<K>::value,std::ostream&>::type
+serialize( const K& obj, std::ostream& out ) { 
+    out << "Serialisation de obj..." << std::endl; 
+    return out; }
+template<typename K> typename std::enable_if<!has_serialize<K>::value,std::ostream&>::type
+serialize( const K& obj, std::ostream& out ) { 
+    out << "Pas de serialisation de obj..." << std::endl; 
+    return out; }
+\end{lstlisting}
+\item \lstinline$std::enable_if$ peut-être passé en type de retour, en paramêtre de fonction "stupide" ou en paramêtre
+template ( avec spécialisation ).
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Curiously Reccuring Template Pattern (CRTP)}
+\tiny
+\begin{block}{Principes}
+\begin{itemize}
+\item Formalisé dans les années 1980 comme le \textsl{F-bounded quantification};
+\item Une classe \lstinline$X$ dérive d'une classe template ayant pour argument template la classe \lstinline$X$ elle-même;
+\begin{lstlisting}
+template<typename K> struct Base { };        // Méthode Base utilise template pour 
+class Derived : public Base<Derived> { ... };// accéder membres classes dérivées\end{lstlisting}
+\end{itemize}
+\end{block}
+\begin{exampleblock}{Exemple d'utilisation}
+\begin{itemize}
+\item Polymorphisme statique
+\begin{lstlisting}
+template <typename T> struct Base { 
+    void implementation() { ... static_cast<T*>(this)->implementation(); ... } 
+    static void static_func() { ... T::static_sub_func(); ... } }; 
+struct Derived : Base<Derived> { void implementation(); 
+                                 static void static_sub_func(); };\end{lstlisting}
+\item Compteur d'objets :
+\begin{lstlisting}
+template <typename T> struct counter {
+    static int objects_created; static int objects_alive;
+    counter() { ++objects_created; ++objects_alive; }
+    counter(const counter&) { ++objects_created; ++objects_alive; }
+protected: // objects should never be removed through pointers of this type
+    ~counter() { --objects_alive; } };
+template <typename T> int counter<T>::objects_created( 0 );
+template <typename T> int counter<T>::objects_alive( 0 );
+class X : counter<X> { ... };
+class Y : counter<Y> { ... };
+\end{lstlisting}
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{CRTP  (suite )}
+\tiny
+\begin{exampleblock}{Autres exemples}
+\begin{itemize}
+\item Constructeur de copie polymorphique
+\begin{lstlisting}
+class Shape {// Base class has a pure virtual function for cloning 
+public: 
+    virtual ~Shape() {}; 
+    virtual std::shared_ptr<Shape> clone() const = 0; }; 
+template <typename Derived> class Shape_CRTP : public Shape { 
+public: // This CRTP class implements clone() for Derived 
+    virtual std::shared_ptr<Shape> clone() const override 
+    { return std::make_shared<Derived>(static_cast<Derived const&>(*this)); } }; 
+// Nice macro which ensures correct CRTP usage 
+#define Derive_Shape_CRTP(Type) class Type: public Shape_CRTP<Type> 
+Derive_Shape_CRTP(Square) {};// Every derived class inherits from Shape_CRTP instead of Shape
+Derive_Shape_CRTP(Circle) {};
+\end{lstlisting}
+\item Chaînage polymorphique
+\begin{lstlisting}
+template <typename ConcretePrinter> class Printer { // Base class 
+public: 
+    Printer(ostream& pstream) : m_stream(pstream) {} 
+    template <typename T> ConcretePrinter& print(T&& t) { 
+        m_stream << t; return static_cast<ConcretePrinter&>(*this); } 
+    template <typename T> ConcretePrinter& println(T&& t) { 
+        m_stream << t << endl; return static_cast<ConcretePrinter&>(*this); } 
+private: 
+    ostream& m_stream; }; 
+class CoutPrinter : public Printer<CoutPrinter> { // Derived class 
+public: 
+    CoutPrinter() : Printer(cout) {} 
+    CoutPrinter& SetConsoleColor(Color c) { ... return *this; } }; 
+// usage CoutPrinter().print("Hello ").SetConsoleColor(Color.red).println("Printer!");
+\end{lstlisting}
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Autres utilitaires templates fournis par C++11/14}
+\tiny
+\begin{columns}
+\begin{column}{0.33\textwidth}
+\begin{block}{Propriétés types basiques \lstinline$type_traits$}
+\begin{itemize}
+\item {\color{blue}\lstinline$is_void$}
+\item {\color{violet}\lstinline$is_null_pointer$} \lstinline$std::nullptr_t$ ?
+\item {\color{blue}\lstinline$is_integral$} 
+\item {\color{blue}\lstinline$is_floating_point$} 
+\item {\color{blue}\lstinline$is_array$} 
+\item {\color{blue}\lstinline$is_enum$} 
+\item {\color{blue}\lstinline$is_union$} 
+\item {\color{blue}\lstinline$is_class$} 
+\item {\color{blue}\lstinline$is_function$} 
+\item {\color{blue}\lstinline$is_pointer$} 
+\item {\color{blue}\lstinline$is_lvalue_reference$} 
+\item {\color{blue}\lstinline$is_rvalue_reference$} 
+\item {\color{blue}\lstinline$is_member_object_pointer$} 
+\item {\color{blue}\lstinline$is_member_function_pointer$}
+\end{itemize}
+\end{block}
+\end{column}
+\begin{column}{0.33\textwidth}
+\begin{block}{Propriétés types composés}
+\begin{itemize}
+\item {\color{blue}\lstinline$is_fundamental$}
+\item {\color{blue}\lstinline$is_arithmetic$}
+\item {\color{blue}\lstinline$is_scalar$}
+\item {\color{blue}\lstinline$is_object$}
+\item {\color{blue}\lstinline$is_compound$}
+\item {\color{blue}\lstinline$is_reference$}
+\item {\color{blue}\lstinline$is_member_pointer$}
+\end{itemize}
+\end{block}
+\begin{block}{Propriété des types}
+\begin{itemize}
+\item {\color{blue}\lstinline$is_const$}
+\item {\color{blue}\lstinline$is_volatile$}
+\item {\color{blue}\lstinline$is_trivial$} : objet possède un constructeur et une copie définis par défaut
+\item {\color{blue}\lstinline$is_trivially_copyable$}
+\item {\color{blue}\lstinline$is_standard_layout$} : Type pouvant être échangé  avec d'autres langages
+\item {\color{blue}\lstinline$is_pod$} : Plain Old Data type?
+\item {\color{blue}\lstinline$is_empty$} : no data in object ?
+\item {\color{blue}\lstinline$is_polymorphic$}
+\item {\color{blue}\lstinline$is_abstract$}
+\end{itemize}
+\end{block}
+\end{column}
+\begin{column}{0.33\textwidth}
+\begin{block}{Propriété des types  (suite )}
+\begin{itemize}
+\item {\color{red}\lstinline$is_final$}
+\item {\color{blue}\lstinline$is_signed$}
+\item {\color{blue}\lstinline$is_unsigned$}
+\end{itemize}
+\end{block}
+\begin{block}{Propriétés opérations}
+\begin{itemize}
+\item {\color{blue}\lstinline$is_constructible$}
+\item {\color{blue}\lstinline$is_default_constructible$}
+\item {\color{blue}\lstinline$is_copy_constructible$}
+\item {\color{blue}\lstinline$is_move_constructible$}
+\item {\color{blue}\lstinline$is_assignable$}
+\item {\color{blue}\lstinline$is_copy_assignable$}
+\item {\color{blue}\lstinline$is_move_assignable$}
+\item {\color{blue}\lstinline$is_destructible$}
+\item {\color{blue}\lstinline$has_virtual_destructor$}
+\end{itemize}
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Autres utilitaires templates fournis par C++11/14 (suite)}
+\tiny
+\begin{columns}
+\begin{column}{0.49\textwidth}
+\begin{block}{Propriétés types}
+\begin{itemize}
+\item {\color{blue}\lstinline$alignment_of$}
+\item {\color{blue}\lstinline$rank$} : Nombre dimensions tableau statique
+\item {\color{blue}\lstinline$extent$} : Taille tableau statique dans un dimension
+\item {\color{blue}\lstinline$is_same$}  :vrai si deux types sont les mêmes
+\item {\color{blue}\lstinline$is_base_of$} : Vrai si un type dérive d'un autre
+\item {\color{blue}\lstinline$is_convertible$} : Vrai si type convertissable en autre type
+\end{itemize}
+\end{block}
+\begin{block}{Modification de type}
+Créé nouvelle définition de type en applicant modifications sur paramêtre template.
+\begin{itemize}
+\item {\color{blue}\lstinline$remove_cv$} : Enlève spécif. const ou volatile au type
+\item {\color{blue}\lstinline$remove_const$}
+\item {\color{blue}\lstinline$remove_volatile$}
+\item {\color{blue}\lstinline$add_cv$} Rajoute spécifs const et volatile au type
+\item {\color{blue}\lstinline$add_const$}
+\item {\color{blue}\lstinline$add_volatile$}
+\item {\color{blue}\lstinline$remove_reference$}
+\item {\color{blue}\lstinline$add_lvalue_reference$}
+\item {\color{blue}\lstinline$add_rvalue_reference$}
+\item {\color{blue}\lstinline$remove_pointer$}
+\item {\color{blue}\lstinline$add_pointer$}
+\end{itemize}
+\end{block}
+\end{column}
+\begin{column}{0.49\textwidth}
+\begin{block}{Modifications type (Suite)}
+\begin{itemize}
+\item {\color{blue}\lstinline$make_signed$} : type entier devient signé
+\item {\color{blue}\lstinline$make_unsigned$}
+\item {\color{blue}\lstinline$remove_extent$} :  type contenu dans un tableau
+\item {\color{blue}\lstinline$remove_all_extents$}  : type contenu dans tableaux imbriqués
+\item {\color{blue}\lstinline$aligned_storage$} : type adapté comme stockage non initialisé pour un type;
+\item {\color{blue}\lstinline$aligned_union$} : type adapté comme stockage non initialisé pour divers types donnés
+\item {\color{blue}\lstinline$decay$} : type basique du type passé en paramètre: {\color{DarkGreen}Exemple}, type tableau sur T converti en \lstinline$T*$;
+\item {\color{blue}\lstinline$enable_if$} : Cache surcharge ou spécialisation de fonction selon une valeur booléenne à la compilation;
+\item {\color{blue}\lstinline$conditional$} : Choisi un type ou un autre selon booléen
+\item {\color{blue}\lstinline$common_type$} : type commun d'un groupe de types;
+\item {\color{blue}\lstinline$underlying_type$} : Entier sous jacent pour type énumération donné
+\item {\color{blue}\lstinline$result_of$} : type résultat d'un objet appelable avec un ensemble d'arguments. \alert{Attention} : template obsolète en C++17, remplacé par \lstinline$invoke_result$.
+\end{itemize}
+\end{block}
+\begin{block}{Classe d'aide}
+{\color{blue}\lstinline$integral_constant$} : Défini une constante spécifique d'un type entier spécifique
+\end{block}
+\end{column}
+\end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Exercice sur l'introspection}
+
+\begin{exampleblock}{Exercice sur le SFINAE}
+\begin{itemize}
+\item \'Ecrire une fonction calculant le median d'un ensemble de valeurs contenues dans un conteneur;
+\item Cette fonction devra marcher pour tout conteneur ayant une méthode \lstinline$size()$ et des itérateurs;
+\item On optimisera cette fonction pour tous les conteneurs à accés direct, c'est à dire possédant l'opérateur \lstinline$[]$.
+\item \alert{Astuce} : Regarder les fonctions \lstinline{std::begin}, \lstinline{std::advance} et \lstinline{std::next}.
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{template variable}
+\tiny
+\begin{block}{Définition}
+\begin{itemize}
+\item Avant C++ 11, pour avoir arguments variables dans une fonction :  utilisation  des ellipses et des macros \lstinline$va_...$;
+\item Traitement des arguments variables résolus à l'exécution alors que les arguments étaient connus à la compilation d'un exécutable;
+\item C++ 11 introduit les templates variables
+\item Permet entre autre de gérer les fonctions à nombre variable d'arguments à la compilation
+\end{itemize}
+\end{block}
+
+\begin{exampleblock}{Exemple}
+\begin{lstlisting}
+template<typename K> K adder( K val ) { return val; }
+template<typename K, typename ... Args> K adder( K first, Args ... Args ) {
+    return first + adder(args...);
+}
+
+int main() {
+    ...
+    std::cout << adder(1,3,5,7,13) << std::endl;
+    std::string a1("tin"), a2("et"), a3("milou");
+    std::cout << adder(a1, a1, a2, a3) << std::endl;
+    ...
+}
+\end{lstlisting}
+\begin{itemize}
+\item \lstinline$adder$ accepte un nombre quelconque de paramètres; \'Ecrit sous forme récursive;
+\item Compile sans problème si paramètres acceptent addition; Fonctions évaluées à la compilation.
+\item \lstinline$typename ... Args$ : \textbf{paquet de paramètre template};
+\item \lstinline$Args ... args$ : \textbf{paquet d'arguments de fonction}.
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Templates variables et pattern matching}
+\tiny
+\begin{block}{Problématique et solution}
+\begin{itemize}
+\item Vérification des arguments du template à la compilation ( par exemple : même type deux à deux )
+\begin{lstlisting}
+template<typename T> bool pair_compare( const T& a, const T& b ) { return a == b; }
+template<typename K,typename ... Args> bool pair_compage( const K& a,const K& b,Args... args ) {
+    return (a==b) && pair_compare(args...);
+}
+int main() {
+   ...
+   pair_compare( 3, 3, 1.5, 1.5, 'a', 'a');// retourne true
+   pair_compare( 3, 3, 1.5, 1.5, 2 );// Ne compile pas, nbre impair args
+   pair_compare( 3, 3., 4, 4 ); // Ne compile pas, type(3) != type(3.)
+   ...
+}
+\end{lstlisting}
+\end{itemize}
+\end{block}
+
+\begin{block}{Un exemple un peu plus complexe}
+\begin{lstlisting}
+template <typename ...T> std::list<std::tuple<T...>> simple_zip(std::list<T>... lst) {
+  std::list<std::tuple<T...>>  result;
+  struct {
+    void operator()(std::list<std::tuple<T...>> &t, int c, typename std::list<T>::iterator ...it) {
+      if(c == 0) return;
+      t.emplace_back(std::move(*it++)...);
+      (*this)(t, c-1, it...); }
+  } zip;
+  zip(result, std::min({lst.size()...}), lst.begin()...);
+  return result;
+}
+std::list<std::tuple<>> simple_zip() { return {}; }
+\end{lstlisting}	
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Utilisation des variadic template pour initialisation inplace}
+\tiny
+\begin{alertblock}{Problématique}
+\begin{itemize}
+\item Pouvoir initialiser tous les objets d'un conteneur à l'aide d'une fonction, sans copie d'un objet externe
+\item On ne connaît pas \textsl{a priori} les arguments nécessaires à cette fonction
+\end{itemize}
+\end{alertblock}
+\begin{exampleblock}{Solution}
+\begin{itemize}
+\item Utilisation des variadic template :
+\begin{lstlisting}
+class Vecteur : public std::vector<double> {
+public:
+    Vecteur( int dim, double value = 0 ) : std::vector<double>(dim,value) {}
+    template<typename... Args>
+    Vecteur( int dim, double (*f)(int, Args...), Args... args ) : std::vector<double>()
+    {
+        reserve(dim); for ( int i = 0;  i < dim; ++i ) emplace_back(f(i,args...));
+    }
+};
+double f(int i, double scal ) { return scal * i * i; }
+int main() {
+    Vecteur u{10, 3.14};
+    Vecteur v{10, f, 0.5};
+    ...
+}
+\end{lstlisting}
+\item \lstinline$emplace_back$ n'était pas vraiment nécessaire ici, car que des doubles
+\item Mais serait nécessaire si les éléments du vecteur étaient des objets contenant beaucoup de données;
+\item Ici on a utilisé un pointeur de fonction, mais en fait, un paramêtre template sur la fonction serait beaucoup plus souple.
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+
+\begin{frame}[fragile]{Exercices}
+\begin{itemize}
+\item \textbf{Composition de $n$ fonctions}
+\begin{itemize}
+\item \'Ecrire une fonction template qui évalue la composition de $n$ fonctions données en paramètres
+\item \'Ecrire une fonction template qui additionne aux valeurs contenues dans un conteneur les valeurs d'un
+autre conteneur sur lequel on a appliqué $n$ fonctions;
+\item Il faut s'assurer de ne pas créer de structures intermédiaires.
+\end{itemize}
+\item \textbf{Génération de nuage de points procédurale}
+\begin{itemize}
+\item Reprendre la classe Nuage de points fait aux TPs sur les classes;
+\item Rajouter un constructeur qui prend une fonction qui selon divers paramètres et un indice i va générer $N$ points.
+\end{itemize}
+% Autre idée ?
+\end{itemize}
+% calcul de mediane
+\end{frame}
+
+\begin{frame}[fragile]{Structure de données variable}
+\tiny
+\begin{block}{Caractéristiques}
+\begin{itemize}
+ \item Les structures/classes utilisateurs en C/C++ sont définies et fixées à la compilation;
+ \item Impossible à l'exécution de rajouter de nouveaux champs à une structure;
+ \item Les templates variables peuvent définir des structures de données avec un nombre de champs arbitraire;
+ \end{itemize}
+ \end{block}
+ 
+\begin{exampleblock}{Définition d'un tuple}
+\begin{lstlisting}
+ template<typename... Ts> struct tuple{};
+ template<typename T, typename... Ts> struct tuple<T,Ts...>: tuple<Ts...> {
+     tuple(T t, Ts... ts) : tuple<Ts...>(ts...), tail(t) {}
+
+     T tail;
+ };
+ tuple<double, uint64_t, const char*> t1(12.2, 42, "big");
+ \end{lstlisting}
+\begin{itemize} 
+\item Comment accéder aux champs d'une structure à nombre variable de champs ?
+\item On sait accéder au premier champs $n$ ( \lstinline$tail$ )
+\item Par récurrence, on peut accéder au $k^{\mbox{ème}}$ champs;
+\item Il va falloir également savoir quel type retourner pour chaque champs...
+\item Par récurrence également; Le tout sera résolu à la compilation.
+\end{itemize}
+\end{exampleblock}
+
+\end{frame}
+
+\begin{frame}[fragile]{Exemple de structure variadic : le tuple}
+\tiny
+\begin{exampleblock}{Accès au type du $k^{\mbox{ème}}$ élément}
+\begin{itemize}
+\item On crée une structure d'aide pour accèder au type du $k^{\mbox{ème}}$ élément
+\item Crée de manière récursive
+\begin{lstlisting}
+template<typename T,typename... Ts> struct elem_type_holder<0, tuple<T,Ts...>> {
+    typedef T type;
+};
+template<size_t k, typename T,typename... Ts> struct elem_type_holder<k, tuple<T,Ts...>> {
+    typedef typename elem_type_holder<k-1,tuple<Ts...>>::type type;
+};
+\end{lstlisting}
+\end{itemize}
+\end{exampleblock}
+
+\begin{block}{Accesseur au $k^{\mbox{ème}}$ élément}
+\begin{itemize}
+\item On se sert de la structure d'aide + définition récursive :
+\begin{lstlisting}
+template <size_t k, class... Ts>
+typename std::enable_if<k==0, typename elem_type_holder<0, tuple<Ts...>>::type&>::type
+get(tuple<Ts...>& t) { return t.tail; }
+// .................................................
+template <size_t k, class T, class... Ts>
+typename std::enable_if<k!=0, typename elem_type_holder<k, tuple<T, Ts...>>::type&>::type
+get(tuple<T, Ts...>& t) {
+  tuple<Ts...>& base = t; return get<k - 1>(base); }
+\end{lstlisting}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Exercice sur les templates}
+\tiny
+\begin{itemize}
+\item Tableau statique à $n$ dimensions
+\begin{itemize}
+\item \'A l'aide d'un variadique sur des \lstinline$size_t$, concevoir un tableau statique à N entrées;
+\end{itemize}
+\item Vecteur procédural
+\begin{itemize}
+ \item Créer une classe Vecteur algébrique avec élément de type générique;
+ \item Définir une méthode d'orthonormalisation d'une base de ces vecteurs, évalué à la compilation, à l'aide
+ d'un algorithme de gram-schmidt pouvant prendre en argument un nombre quelconque de vecteurs
+ \item Algorithme de gram-schmidt ( version récursive en pseudo syntaxe ! ) :
+\begin{lstlisting}
+void axspy( Vecteur<K>& y, K& a, const Vecteur<K>& x ) { y -= a*x; }
+void axspy( Vecteur<K>& y, K& a, const Vecteur<K>& x, ... ) { y -= a*x; axspy(y,...); }
+void gram_schmidt( Vecteur& u ) { u.normalize(); }
+void gram_schmidt( Vecteur& v, Vecteur& u ) { gram_schmidt(u); v = v - (v|u).u; 
+                                              v.normalize(); }
+void gram_schmidt( Vecteur& v, Vecteur& u, ... )
+{ gram_schmidt(u,...); axspy(v,x,...); v.normalize();}
+\end{lstlisting}
+\item Attention lorsque K est un complexe !
+\item Tester l'algorithme sur un jeu de paramètre réel :
+\begin{lstlisting}
+Vecteur<double> u1{1.,1.,1.,1.}, u2{2.,1.,1.,1.}, u3{2.,2.,1.,1.}, u4{2.,2.,2.,1.};
+\end{lstlisting}
+\item Puis sur un jeu de paramètre complexe :
+\begin{lstlisting}
+// Syntaxe C++ 14 pour les complexes :
+Vecteur<std::complex<double>> z1{1.+1i,1.+1i,1.+1i,1.+1i},
+                              z2{1.+2i,1.+1i,1.+1i,1.+1i},
+                              z3{1.+1i,1.+2i,1.+1i,1.+1i},
+                              z4{1.+1i,1.+1i,1.+2i,1.+1i},
+\end{lstlisting}
+\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Exercices (suite\ldots)}
+\tiny
+\begin{exampleblock}{Produit cartésien d'ensemble}
+\begin{itemize}
+\item \'Ecrire un programme qui permet à partir d'un ensemble de valeurs homogènes ou non de former le produit cartésien
+de cet ensemble par lui-même.
+\item Par exemple, l'ensemble $\left\{ "Tin", 3.14, "Mi"\right\}$ donne par le produit cartésien par lui-même :
+\[
+\begin{array}{ll}
+\left\{\right.&["Tin","Tin"], ["Tin",3.14], ["Tin","Mi"], [3.14,"Tin"], \\
+       &[3.14,3.14], [3.14,"Mi"], ["Mi","Tin"], ["Mi",3.14],["Mi","Mi"]\left.\right\}
+\end{array}
+\]
+\item On utilise pour former le tuple de ces pairs d'entités, la fonction \lstinline$std::tuple_cat$ qui concatène $n$ tuples en un seul tuple.
+\item On programmera également une fonction permettant d'affichier l'ensemble obtenu par le produit cartésien 
+\item Exemple de programme principal :
+\begin{lstlisting}
+auto cp = selfCartesianProduct(1,2,3,4,5);
+print(cp);
+\end{lstlisting}
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+ 
+\begin{frame}[fragile]{Conclusion temporaire}
+\tiny
+\begin{block}{C++ un langage mixte interprété/compilé ?}
+\begin{itemize}
+\item {\color{red}Template + expressions constantes} : permet d'effectuer des traitements complexes sur des données \textbf{statiques};
+\item Les données dynamiques seront traitées par l'exécutable produit par le compilateur;
+\item Si le code ne contient que des données statiques : le calcul complet peut être fait par le compilateur;
+\item les résultats peuvent être extraits de l'assembleur ou du binaire produit par l'exécutable;
+\item Tous les caractéristiques d'un interpréteur évolué : introspection, typage anonyme des paramètres de fonction, etc... : ce qu'on a dans python.
+\item Avec une syntaxe néanmoins plus complexe !
+\end{itemize}
+\end{block}
+
+\begin{exampleblock}{Le C++ comme EDSL}
+\begin{itemize}
+\item EDSL : Embeded Domain Specific Language;
+\item Expression templates : Permet de rajouter des extensions au langage en fabricant un arbre AST ( Abstract Syntax Tree );
+\item Voir pour cela la bibliothèque Boost.Proto : permet de créer une grammaire et de nouvelles fonctionnalités évaluées par expression template;
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+\end{document}

@@ -1,0 +1,1612 @@
+\documentclass[handout,10pt]{beamer}
+\usetheme{Copenhagen}
+\usepackage{amsmath,amsfonts,graphicx}
+\usepackage{listings}
+\usepackage{enumitem}
+\setitemize{label=\usebeamerfont*{itemize item}%
+            \usebeamercolor[fg]{itemize item}
+            \usebeamertemplate{itemize item}}
+            
+\setlist[description]{style = multiline, labelwidth = 60pt}
+
+\usepackage{tikz} % Required for drawing custom shapes
+\usetikzlibrary{shadows, arrows, decorations.pathmorphing, fadings, shapes.arrows, positioning, calc, shapes, fit, matrix}
+
+\usepackage{polyglossia}
+
+
+\definecolor{lightblue}{RGB}{0,200,255} 
+\definecolor{paper}{RGB}{245,237,187}
+\definecolor{ocre}{RGB}{243,102,25} % Define the orange color used for highlighting throughout the book
+\definecolor{BurntOrange}{RGB}{238,154,0}
+\definecolor{OliveGreen}{RGB}{188,238,104}
+\definecolor{DarkGreen}{RGB}{0,128,0}
+\definecolor{BrickRed}{RGB}{238,44,44}
+\definecolor{Tan}{RGB}{210,180,140}
+\definecolor{Aquamarine}{RGB}{127,255,212}
+\definecolor{NavyBlue}{RGB}{0,64,128}
+
+\title[C++\hspace{2em}]{POO avec C++ 2011}
+\author[Xavier JUVIGNY]{Xavier JUVIGNY}
+\date{\today}
+
+\lstdefinestyle{customcpp}{
+    breaklines=true,
+    frame=shadow,
+    xleftmargin=\parindent,
+    language=C++,
+    showstringspaces=false,
+    basicstyle=\tiny\ttfamily,
+    keywordstyle=\bfseries\color{green!40!black},
+    commentstyle=\itshape\color{purple!40!black},
+    identifierstyle=\color{blue},
+    stringstyle=\color{orange!60!black},
+}
+
+\newcommand*\lstinputpath[1]{\lstset{inputpath=#1}}
+\lstinputpath{./exemples/2_POO}
+\newcommand{\includepartcode}[4][cpp]{
+\lstinputlisting[escapechar=, firstline=#3, lastline=#4, style=custom#1]{#2}
+}
+
+
+\institute{ONERA}
+
+\begin{document}
+
+\lstset{language=C++,
+  frame=single,
+  backgroundcolor=\color{paper},
+  basicstyle=\tiny\ttfamily,
+  keywordstyle=\color{blue}\tiny\ttfamily,
+  commentstyle=\color{red}\tiny\ttfamily,
+  stringstyle=\color{brown}\tiny\ttfamily,
+  showstringspaces=false,
+  keepspaces=true,
+  showspaces=false,
+  tabsize=4
+}
+
+\begin{frame}
+ \titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Plan du cours}
+\tableofcontents
+\end{frame}
+
+\section{Introduction à l'orienté objet}
+
+\begin{frame}[fragile]{Orienté Objets}
+\tiny
+\begin{block}{Programmation orienté objets}
+\begin{itemize}
+\item Un style de programmation et une façon de programmer
+\begin{itemize}
+\item Avec un langage traditionnel;
+\item Avec un langage orienté objets
+\end{itemize}
+\end{itemize}
+\alert{Programmer avec un langage POO ne fait pas de l'orienté objets}
+\end{block}
+
+\begin{block}{Définition de l'objet}
+\begin{itemize}
+\item Un objet contient à la fois des données et des fonctions faisant des traitements sur ces données.
+\item Autres concepts similaires aux autres méthodes de programmation.
+\item Un jargon à connaître :
+\end{itemize}
+\begin{tabular}{|c|c|c|}\hline
+Type & Variable & Valeurs \\ \hline
+\textcolor{orange}{Classe} & \textcolor{orange}{Variable} & \textcolor{orange}{Valeurs/Objets} \\ \hline
+\lstinline$class Vecteur;$ & \lstinline$int u; double x;$ & \lstinline$[1.,3.,5.], "Coucou",  23, Vecteur(1.,3.,5.,7.)$ \\ \hline
+\end{tabular}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Service vs réalisation}
+\tiny
+\begin{block}{Objectif}
+\begin{itemize}
+\item Une valeur qui représente un nuage de points : Un ensemble de couples X et Y, réels
+\item De nombreuses réalisations sont possibles. Par exemple
+\begin{exampleblock}{Exemple d'interface}
+\begin{itemize}
+\item Un vecteur de X, un autre de Y, même taille
+\item Un vecteur de couples (X,Y)
+\item Avec un dictionnaire : Chaque point avec une clef $(i,j)$ et le couple $(x,y)$ en valeur ou un vecteur de X et un vecteur de Y avec une clef par zone, par exemple les $X>0$, les $X<0$ et les $X==0$
+\end{itemize}
+\end{exampleblock}
+\item Pour chaque mise en œuvre\ldots
+\begin{itemize}
+\item Une fonction qui retourne les X, une les Y
+\item Donne le nombre de points
+\item Une qui donne tous les points, au dessus/au dessous d'un X ou d'un Y, avec une valeur exacte de X
+\end{itemize}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{La donnée pilote l'algorithme}
+\tiny
+\lstset{language=C++,
+  frame=single,
+  backgroundcolor=\color{white},
+  basicstyle=\tiny\ttfamily,
+  keywordstyle=\color{blue}\tiny\ttfamily,
+  commentstyle=\color{red}\tiny\ttfamily,
+  stringstyle=\color{brown}\tiny\ttfamily,
+  keepspaces=true,
+  showspaces=false,
+  tabsize=4
+}
+\begin{block}{Exemple avec choix de réalisation n°1}
+\begin{lstlisting}
+auto coords=std::make_pair(std::vector<double>{100},std::vector<double>{100});
+using coordinates=decltype(coords);
+auto& y = coords.second;
+auto yLowerThan( const coordinates& crds, double val ) {
+    coordinates c; std::vector<int> r;
+    for ( int i = 0; i < crds.first.size(); ++i) {
+        if (crds.second[i] < val ) {
+            c.first.push_back(crds.first[i]); c.second.push_back(crds.second[i]);
+            r.push_back(i);
+    }   }
+    return std::make_tuple(c,r); }
+\end{lstlisting}
+\end{block}
+
+\begin{exampleblock}{Exemple avec choix de réalisation n°2}
+\begin{lstlisting}
+using coordinates=std::vector<std::pair<double,double>>;
+coordinates coords(100);
+std::vector<double> y(100); int iy=0;
+for ( const auto& c : coords ) y[++iy] = c.second;
+auto yLowerThan( const coordinates& crds, double val ) {
+    coordinates c; std::vector<int> r; 
+    for ( int i = 0; i < crds.size(); ++i) {
+        if (crds[i].second < val ) {
+            c.push_back(crds[i]); r.push_back(i);
+    }   }
+    return std::make_tuple(c,r); }
+\end{lstlisting}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Concrétisation de l'interface}
+\tiny
+\begin{block}{Homogénéité de l'interface}
+\begin{itemize}
+\item Divers objets possèdent la même interface :
+\begin{itemize}
+\item Des objets de même type : réels, entiers, etc.
+\item Les listes, les tableaux, les dictionnaires, etc :
+\end{itemize}
+\end{itemize}
+\begin{lstlisting}
+std::vector<double>  u{ {3.4, 5.8, 1.2} };
+std::list<double>    l{ {3.4, 5.8, 1.2} };
+std::array<3,double> a{ {3.4, 5.8, 1.2} };
+
+for ( auto& val : u) val *= 0.5;
+for ( auto& val : l) val *= 0.5;
+for ( auto& val : a) val *= 0.5;
+
+u.push_back(2.);
+l.push_back(2.);
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Mise en {\oe}uvre d'une interface}
+\tiny
+\begin{exampleblock}{Mise au point de l'interface}
+Méthode de développement TDD ( Test Driven Development ) :
+\begin{itemize}
+\item L'interface se conçoit en écrivant les tests de "haut niveau" en premier lieu;
+\item On regarde avec le client si l'interface proposé dans les tests correspond à son attente.
+\end{itemize}
+\end{exampleblock}
+\begin{block}{Mise au point d'une identité vecteur géométrique}
+\begin{lstlisting}
+#include "vecteur.hpp"
+
+Geometry::Vecteur u{ { 1., 0., 0. } };
+Geometry::Vecteur v;
+v.x = u.z; v.y = -u.x; v.z = u.y
+
+std::cout << u << " + " << v << " = " << u+v << std::endl;
+double nrmSq_u = u.normalize(); double nrmSq_v = v.normalize();
+Geometry::Vecteur w = u - (u|v)*v;
+\end{lstlisting}
+\alert{En premier lieu, bien définir son interface}
+\end{block}
+
+\begin{block}{Conception d'une classe}
+\begin{itemize}
+\item \textcolor{violet}{Concevoir une classe n'est pas un fin en soi}
+\item C'est \textbf{un} moyen de réaliser une interface ( mais on peut utiliser d'autres techniques si elles sont plus adaptées ).
+\end{itemize}
+\end{block}
+
+\end{frame}
+
+\begin{frame}{Conception d'une interface}
+\tiny
+\begin{minipage}{0.59\textwidth}
+\begin{block}{Interface-1}
+\begin{itemize}
+\item Que la partie utilisable de l'objet :
+\begin{itemize}
+\item Accès aux données pertinentes de l'objet;
+\item Des constantes;
+\item Des fonctions ( méthodes ) pour manipuler l'objet;
+\item Gestion du comportement;
+\end{itemize}
+\item \textcolor{orange}{Un exemple} : Le téléphone
+\end{itemize}
+\end{block}
+\end{minipage}
+\begin{minipage}{0.39\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\node[draw,fill=gray!70, text width=20ex, text centered] (I) {Interface};
+\node[draw,fill=cyan, text width=20ex,minimum height = 8em, below=1mm of I.south, text centered] (M) {Mise en {\oe}uvre};
+\node[draw,fill=gray!80, text width=6ex, below=1em of M.south west] (Im1) {};
+\node[draw,fill=gray!80, text width=6ex, below=1em of M.south] (Im2) {};
+\node[draw,fill=gray!80, text width=6ex, below=1em of M.south east] (Im3) {};
+\node[above=1em of I.north west] (E1) {};
+\node[above=1em of I.north] (E2) {};
+\node[above=1em of I.north east] (E3) {};
+\node[right=2mm of E1] (E11) {};
+\node[right=2mm of E2] (E21) {};
+\node[right=2mm of E3] (E31) {};
+\draw[blue,-latex] (E1) -- (I.north west);
+\draw[blue,-latex] (E2) -- (I.north);
+\draw[blue,-latex] (E3) -- (I.north east);
+\draw[orange,-latex] (I.north west) -- (E11) ;
+\draw[orange,-latex] (I.north) -- (E21);
+\draw[orange,-latex] (I.north east) -- (E31);
+
+\draw[blue,-latex] (M.south west) -- (Im1);
+\draw[orange,-latex] (Im1) -- (M.245);
+
+\draw[blue,-latex] (M.260) -- (Im2);
+\draw[orange,-latex] (Im2) -- (M.280);
+
+\draw[blue,-latex] (M.285) -- (Im3);
+\draw[orange,-latex] (Im3) -- (M.south east);
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]{Conception d'une interface (2)}
+\tiny
+\begin{minipage}{0.59\textwidth}
+\begin{block}{Fonctions}
+\begin{itemize}
+\item \lstinline{status:int initialize()}
+\item \lstinline{value:float currentData(variable:string)}
+\item \lstinline{terminate()}
+\end{itemize}
+\alert{Plusieurs variables pour currentData ?}
+\end{block}
+\begin{block}{Constantes}
+\begin{itemize}
+\item \lstinline{variables = ['Temperature', 'Pressure']}
+\end{itemize}
+\end{block}
+\begin{block}{Comportement}
+{
+\begin{itemize}
+\item créer l'objet
+\item initialize (commence l'échantillonage)
+\item currentData (si status est True)
+\item terminate (arrêt échantillonage)
+\item détruire l'objet
+\end{itemize}
+}
+\alert{\underline{Quid gestion des erreurs ?} Bad initialization, Timeout, \ldots}
+\end{block}
+\end{minipage}
+\begin{minipage}{0.39\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\node[draw,fill=gray!70, text width=20ex, text centered] (I) {Interface};
+\node[draw,fill=cyan, text width=20ex, minimum height = 20ex, below=1mm of I.south, text centered] (M) {Mise en {\oe}uvre};
+\node[draw,fill=gray!80, text width=6ex, below=1em of M.south west] (Im1) {};
+\node[draw,fill=gray!80, text width=6ex, below=1em of M.south] (Im2) {};
+\node[draw,fill=gray!80, text width=6ex, below=1em of M.south east] (Im3) {};
+\node[above=1em of I.north west] (E1) {};
+\node[above=1em of I.north] (E2) {};
+\node[above=1em of I.north east] (E3) {};
+\node[right=2mm of E1] (E11) {};
+\node[right=2mm of E2] (E21) {};
+\node[right=2mm of E3] (E31) {};
+\draw[blue,-latex] (E1) -- (I.north west);
+\draw[blue,-latex] (E2) -- (I.north);
+\draw[blue,-latex] (E3) -- (I.north east);
+\draw[orange,-latex] (I.north west) -- (E11) ;
+\draw[orange,-latex] (I.north) -- (E21);
+\draw[orange,-latex] (I.north east) -- (E31);
+
+\draw[blue,-latex] (M.south west) -- (Im1);
+\draw[orange,-latex] (Im1) -- (M.245);
+
+\draw[blue,-latex] (M.260) -- (Im2);
+\draw[orange,-latex] (Im2) -- (M.280);
+
+\draw[blue,-latex] (M.285) -- (Im3);
+\draw[orange,-latex] (Im3) -- (M.south east);
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]{Conception d'une interface (3)}
+\tiny
+\begin{block}{Comportement}
+\begin{minipage}{0.59\textwidth}
+Généralement décrit par un automate.
+\end{minipage}
+\begin{minipage}{0.39\textwidth}
+\begin{center}
+\begin{tikzpicture}
+\node[draw,circle] (start) {};
+\node[draw,rectangle,rounded corners=4pt, right=4ex of start.east] (ready){\scriptsize ready};
+\node[draw,rectangle,rounded corners=4pt, below=2em of ready.south] (running){\scriptsize running};
+\node[right=1ex of running.east] (ar1){};
+\node[draw,circle,fill=black, left=4ex of running.west] (stop){};
+\draw[->,>=latex,blue] (start) -- node[midway, above]{\tiny\bf new}(ready);
+\draw[->,>=latex,blue] (ready) -- node[midway](inte){} (running);
+\draw[->,>=latex,blue] (running) -- node[midway,above]{\tiny\bf del} (stop);
+\draw[->,>=latex,blue] (running) -- node[below,right]{\tiny\bf currentData} (ar1) |- node[midway,above]{\tiny\bf initialize} (inte);
+\draw[->,>=latex,blue] (running) -- +(0,-6ex) -- node[below,left]{\tiny\bf terminate} +(8em,-6ex) |- (ready.east);
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+\end{block}
+\begin{block}{Interface N+1}
+Interface utilisant les services offerts par l'interface.\\
+\textbf{Exemple} : Interface visualisation données envoyées par capteurs.
+\end{block}
+\begin{block}{Interface N-1}
+Interface utilisée ( non unique ) par l'interface actuelle
+\begin{itemize}
+\item Se traduit en C++ par un \lstinline{#include}
+\item Ou par un appel système
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}{Principes de l'OO}
+\begin{block}{L'interface}
+Les services offerts à l'extérieur du module/bibliothèque
+\end{block}
+\begin{block}{L'encapsulation}
+Isoler/Cacher les choix de mises en {\oe}uvres
+\end{block}
+\begin{block}{La factorisation}
+Factoriser les services communs au sein de types "abstraits"
+\begin{itemize}
+\item Polymorphisme
+\item \textsl{Héritage}
+\end{itemize}
+\end{block}
+
+\begin{alertblock}{Mises en {\oe}uvre}
+Réalisable dans tous les langages de programmation.\\
+Les langages POO fournissent des facilités.
+\end{alertblock}
+\end{frame}
+
+\begin{frame}{Encapsulation}
+\scriptsize
+\begin{block}{Une unité}
+Un paquet comprenant tout ce qu'on peut trouver pour installer une bibliothèque/module qui contient :
+\begin{itemize}
+\item des données;
+\item des traitements sur les données;
+\item mais aussi :
+\begin{itemize}
+\item des constantes;
+\item traitement des erreurs;
+\item des tests
+\item de la documentation
+\item la production
+\end{itemize}
+\end{itemize}
+\end{block}
+
+\begin{block}{Mise en {\oe}uvre}
+Le choix de ce qui est dans l'objet ou pas est arbitraire. Il dépend de l'application. Il n'est pas possible de définir un objet idéal pour toutes les applications. C'est donc différent d'une modélisation mathématique.
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{OO -- Principes -- Isolation}
+\lstset{language=C++,
+  frame=single,
+  backgroundcolor=\color{white},
+  basicstyle=\tiny\ttfamily,
+  keywordstyle=\color{blue}\tiny\ttfamily,
+  commentstyle=\color{red}\tiny\ttfamily,
+  stringstyle=\color{brown}\tiny\ttfamily,
+  keepspaces=true,
+  showspaces=false,
+  tabsize=4
+}
+\begin{block}{Une interface}
+Les services, les fonctions, les constantes,\ldots
+\end{block}
+
+\begin{block}{Une réalisation}
+\begin{itemize}
+\item La structure interne des valeurs manipulées;
+\item La mise en œuvre effective des services.
+\end{itemize}
+\end{block}
+
+\begin{block}{La règle d'or}
+\alert{Ne pas exposer la réalisation}
+
+\begin{minipage}{0.49\textwidth}
+\begin{lstlisting}
+double retrieveCurrentMax( const Capteur& a ) {
+    return a.max;
+}
+\end{lstlisting}
+
+\begin{lstlisting}
+double retrieveCurrentMax( const Capteur& a ) {
+    a.update(); return a.max;
+}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.49\textwidth}
+\begin{lstlisting}
+double retrieveCurrentMax( const Capteur& a ) {
+    return std::min(a.max, CONST_VAL_MAX);
+}
+\end{lstlisting}
+\begin{lstlisting}
+double retrieveCurrentMax( const Capteur& a ) {
+    return CONST_VAL_MAX;
+}
+\end{lstlisting}
+\end{minipage}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{OO -- Principes -- Factorisation }
+\begin{block}{Si deux objets sont similaires}
+\begin{itemize}
+\item Interfaces avec intersection non nulle;
+\item Possible de factoriser cette interface.
+\end{itemize}
+\end{block}
+
+\begin{exampleblock}{Les matrices}
+\begin{itemize}
+\item Une matrice inversible est une matrice carrée;
+\item Une matrice carrée est une matrice;
+\item Une matrice est un tableau à deux dimensions.
+\end{itemize}
+\end{exampleblock}
+
+\begin{alertblock}{Règle à suivre}
+Si \textbf{B} est un sous-ensemble de \textbf{A}, alors \textbf{b} est au moins un \textbf{a}.
+
+\textsl{\textcolor{blue}{Mais... Si je peux rajouter une ligne à une matrice, que doit faire une matrice carrée ?}}
+\end{alertblock}
+\end{frame}
+
+\begin{frame}{Principes -- Factorisation -- 2}
+\begin{block}{Deux grandes règles de base pour les classes}
+\begin{itemize}
+\item La factorisation se conçoit sur les objets, puis se formalise sur les classes;
+\item La factorisation est arbitraire : elle dépend de l'application visée.
+\end{itemize}
+\end{block}
+
+\begin{alertblock}{Erreurs traditionnelles de la conception des classes}
+\begin{itemize}
+\item Il ne s'agit pas de modéliser le monde;
+\item Il s'agit de réaliser du code pour une application.
+\end{itemize}
+\end{alertblock}
+\end{frame}
+
+\begin{frame}{OO - Principes -- Factorisation - - 4}
+\begin{block}{Règle de base de l'OO}
+\textbf{L'encapsulation} et son corollaire immédiat et essentiel : \textbf{l'interface}
+\end{block}
+
+\begin{block}{La factorisation}
+\textsl{Matrice inversible, matrice carrée, matrice,\ldots}\\
+\begin{itemize}
+\item La factorisation des interfaces donne la hiérarchie des classes;
+\item Factoriser seulement les valeurs utilisables;
+\item Généralisation
+\item À ne pas confondre avec la \textbf{composition}.
+\end{itemize}
+\end{block}
+
+\begin{block}{La dérivation}
+\textsl{Matrice inversible, matrice symétrique inversible}
+\begin{itemize}
+\item Ne dériver que les valeurs utilisables;
+\item Spécialisation
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Hiérarchie des classes}
+\begin{block}{Factorisation/Dérivation des types}
+\begin{itemize}
+\item Forme une arborescence 
+\begin{itemize}
+\item Une matrice carrée est une matrice;
+\item Une matrice symétrique est une matrice carrée;
+\item Une matrice symétrique définie positive est une matrice symétrique;
+\item Une matrice inversible est une matrice carrée; 
+\end{itemize}
+\end{itemize}
+\end{block}
+\begin{tikzpicture}
+\tikzstyle{class} = [rectangle,fill=yellow!50,draw]
+\tikzstyle{estun} = [->, very thick, >=latex]
+\node[class] at (0,5) (M) {Matrice};
+\node[class] at (0,4) (C) {Matrice carrée};
+\node[class] at (-3,3) (S) {Matrice symétrique};
+\node[class] at (+3,3) (I) {Matrice inversible};
+\node[class] at (-3,2) (SDP) {Matrice symétrique définie positive};
+\draw[estun] (C) -- (M);
+\draw[estun] (S) |- (C);
+\draw[estun] (I) |- (C);
+\draw[estun] (SDP) -- (S);
+\end{tikzpicture}
+\end{frame}
+
+\section{POO en C++}
+
+\begin{frame}[fragile]{Syntaxe de déclaration de la classe}
+\tiny
+\begin{block}{Déclaration}
+\begin{lstlisting}
+class Vecteur //<--- Déclaration d'un nouveau type
+{
+public: // Partie accessible par une fonction externe à la classe
+    Vecteur() = default;//Constructeur par défaut
+    void setAsPoint();// Méthode publique de la classe
+    double x,y,z;// Attributs publics de la classe
+private: // Partie privée accessible uniquement aux méthodes de la classe.
+    bool is_point() const; // Méthode privée de la classe
+    double w; // Attributs privés de la classe
+};
+
+Vecteur u;// <-- Nouvelle variable de type Vecteur 
+          //     faisant appel au constructeur par défaut
+u.x = 3.0;//Accès aux attributs publiques de la classe
+u.y = 2.0;
+u.z = 1.0;
+u.setAsPoint();
+\end{lstlisting}
+\end{block}
+On a définit ici un constructeur par défaut qui initialise par défaut chaque attribut :
+pour les réels, l'initialisation ne fait que réserver la mémoire pour les trois attributs.
+\end{frame}
+
+\begin{frame}[fragile]{Les constructeurs}
+\tiny
+\begin{block}{Les constructeurs}
+\begin{itemize}
+\item Un constructeur décrit la façon d'initialiser une variable d'un type donné;
+\item Il doit être nommé du même nom que le type;
+\item Il peut y avoir plusieurs constructeurs possédant une liste d'arguments différents;
+\end{itemize}
+\end{block}
+\begin{lstlisting}
+class Vecteur {
+public:
+  Vecteur();// Constructeur par défaut
+  // Initialisation du vecteur à partir d'une liste de valeurs
+  Vecteur( const std::initializer_list<double>& init_vals );
+  Vecteur( double cx, double cy, double cz  );//Initialisation à partir de 3 entiers
+  Vecteur( double cx );//Initialisation à partir de 1 réel
+  Vecteur( const Vecteur& u ); // Constructeur de copie
+  Vecteur( Vecteur&& u ); // Constructeur de déplacement
+  ... //D'autres constructeurs si on le souhaite...
+};
+
+Vecteur u;                 // Appel au constructeur par défaut
+Vecteur v{ {1., 3., -5.} };// Appel construction avec liste d'initialisation
+Vecteur w( 3., 4., 2.);  // Appel constructeur avec trois réels
+Vecteur z(1.); // Appel contructeur avec un réel
+Vecteur y(z);// Appel le constructeur de copie
+Vecteur w(std::move(y)); // Appel constructeur de déplacement
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Les constructeurs}
+\tiny
+\begin{block}{Règles du C++ sur les constructeurs}
+\begin{itemize}
+\item Si aucun constructeur n'est déclaré, C++ définit un constructeur par défaut sans paramètres, appelant les constructeurs
+par défaut de chacun des attributs de la classe;
+\item Si non déclaré, C++ définit un constructeur de copie et un constructeur de déplacement qui appellent les constructeurs de copie/déplacement de chacun des attributs;
+\item Si un des attributs est non copiable ( respectivement non déplaçable ), alors le constructeur de copie ( respectivement de déplacement )
+est automatiquement supprimé;
+\item Il est possible d'appeler un constructeur dans la liste d'initialisation ( voir plus loin ) d'un autre constructeur de la même classe.
+\end{itemize}
+\alert{Pour éviter de mauvaises surprises, toujours déclarer les trois constructeurs : celui par défaut ( sans paramètre ), celui de copie et celui de déplacement, quitte à les déclarer par défaut ou supprimés ( voir transparent suivant ).}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Les constructeurs par défauts/supprimés}
+\begin{block}{Constructeurs par défaut}
+Il suffit de déclarer le constructeur sans paramètres, de copie ou de déplacement en spéciant à la fin qu'on prend celui
+défini par défaut par C++ :
+\end{block}
+\begin{block}{Suppression d'un constructeur déclaré par défaut}
+Si on veut interdire le constructeur de copie, ou sans paramètre, ou de déplacement, il suffit de déclarer ce constructeur
+avec un suffixe \lstinline{delete} pour le supprimer
+\end{block}
+
+\begin{lstlisting}
+class Vecteur {
+public:
+    Vecteur() = default;// Constructeur sans paramétre par défaut
+    Vecteur( const Vecteur& u ) = default;//Construction de copie par défaut
+    Vecteur( Vecteur&& u ) = delete;//Interdiction de déplacer
+    ...
+private:// Partie de la classe uniquement accessible aux membres de la classe.
+    std::array<double,3> m_valeurs;
+};
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Mise en {\oe}uvre d'un constructeur}
+\tiny
+\begin{block}{Constructeur en ligne}
+On peut définir un constructeur dans la déclaration de la classe. Il est alors en ligne (inline) si pas trop gros.
+\begin{lstlisting}
+// vecteur.hpp
+class Vecteur {
+   ...
+   //                           initialisation des attributs   ---- 
+   //                                                             V
+   Vecteur( const std::initializer_list<double>& vals ) : m_valeurs{vals} {}   
+   Vecteur( double x, double y, double z );//<--- seulement déclarée !
+   ...
+   private:
+   std::array<double,3> m_valeurs;
+};
+\end{lstlisting}
+La définition du constructeur doit y être brêve !
+\end{block}
+
+\begin{block}{Mise en {\oe}uvre d'un constructeur}
+Définition du constructeur dans le fichier de mise en {\oe}uvre ( .cpp ) :
+\begin{lstlisting}
+// vecteur.cpp
+# include "vecteur.hpp"
+// Pour toutes méthodes/attributss définies en dehors de la classe :
+// Nom de la classe :: Nom de la méthode/attribut
+Vecteur::Vecteur( double x, double y, double z ) : m_valeurs{} {
+  m_valeurs[0] = x; m_valeurs[1] = y; m_valeurs[2] = z;
+}
+\end{lstlisting}
+
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Constructeur de copie/de déplacement}
+\tiny
+\begin{block}{Constructeur de copie}
+\begin{itemize}
+\item Pour instancier un nouvel objet en copiant les données d'un objet existant;
+\item Utilisé implicitement lors du passage par valeur d'un objet en paramêtre, lors du retour par valeur  d'une fonction d'une variable non locale à la fonction
+\end{itemize}
+\begin{lstlisting}
+class Vecteur {
+   ...
+   Vecteur( const Vecteur& u ) : m_arr_coefs(u.m_arr_coefs) {}
+   ...
+};
+\end{lstlisting}
+\end{block}
+
+\begin{block}{Constructeur de déplacement}
+\begin{itemize}
+\item Instancie un nouvel objet en déplaçant les données d'un objet existant vers ce nouvel objet. Après création du nouvel objet,
+l'ancien objet ne possède plus ces données initiales;
+\item Utilisé lors du retour par valeur d'une fonction d'une variable locale à cette fonction.
+\end{itemize}
+\begin{lstlisting}
+class Vecteur {
+    ...
+    Vecteur( Vecteur&& u ) : m_arr_coefs(std::move(u.m_arr_coefs))
+    {}
+};
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Destructeur}
+\begin{block}{Le destructeur}
+\begin{itemize}
+\item Définit la façon dont un objet de la classe va se détruire.
+\item Peut être définit par défaut : appel de destructeur correspondant à chacun des attributs de l'objet;
+\item Est nommé du même nom que la classe précédé d'un \verb@~@.
+\item Un seul destructeur par classe. Ne possède pas de paramètres;
+\item Appelé au pire lorsqu'on sort du bloc de visibilité de l'objet.
+\end{itemize}
+\end{block}
+\begin{lstlisting}
+class Vecteur { ...
+    ~Vecteur() = default;
+};
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Gestion des exceptions pour les constructeurs {\color{red}\bf\Large (+)}}
+
+\begin{block}{Gestion des exceptions lors de la construction}
+Utiliser le bloc \lstinline{try... catch} autour de l'initialisation de l'objet :
+\begin{lstlisting}
+class Matrix { 
+public: 
+    ...
+    Matrix( int nrows, int ncols );
+    ...
+private: 
+    std::vector<double> m_arr_coefs; 
+};
+    
+Matrix::Matrix( int nrows, int ncols ) try :
+  m_arr_coefs(nrows*ncols) // <--- Liste d'initialisation
+  { // Corps du constructeur.
+    ...
+  }
+catch(std::bad_alloc& err)
+  {
+      ...
+      throw std::bad_alloc(errMsg);
+  }  
+\end{lstlisting}
+\begin{itemize}
+\item Impossible de rattraper une exception au sein d'un constructeur;
+\item Rattraper une exception pour un constructeur ne peut servir qu'à le reinterpréter et le renvoyer.
+\item L'objet n'existe pas lors du traitement de l'exception.
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Gestion des erreurs dans un constructeur{\color{red}\bf\Large (+)}}
+\tiny
+\begin{block}{Exceptions}
+\begin{itemize}
+\item Seul moyen propre de signaler les erreurs dans un constructeur;
+\item Si une exception est levée, l'objet ne sera \textbf{jamais créé};
+\item L'objet est créé uniquement au moment de quitter le constructeur;
+\item Exception dans sous-objet ( attribut/héritage ) : objet non construit;
+\item Pour une sous-partie optionelle, utiliser l'idiome de mise en {\oe}uvre \textbf{Pimpl}.
+\end{itemize}
+\end{block}
+\begin{lstlisting}
+// CapteurPression.hpp
+class CapteurPression {
+   ...
+private:
+   PressureSensor m_pressure;
+   ThermalSensor  m_thermal ;
+   class OptionalSensors;
+   OptionalSensors* m_pt_other_sensors;
+};
+// CapteurPression.cpp
+class CapteurPression::OptionalSensors {
+public:
+    Clock m_clock;
+    HydroSensor m_hydrosensor;
+};
+...
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Exercice : nuage de points}
+\tiny
+\begin{exampleblock}{Construction d'un nuage de point}
+\begin{itemize}
+\item Construire une classe \lstinline$CloudOfPoints$ permettant d'instancer des nuages de $N$ points en 2D, $N$ pouvant varier d'un nuage à l'autre;
+\item Mettre des affichages au début de chaque constructeur et destructeur pour tracer l'appel des constructeurs;
+\item Tester votre classe à l'aide du programme suivant :
+\begin{lstlisting}
+# include "CloudOfPoints.hpp"
+int main()
+{
+    CloudOfPoints nuage1{ 10 };
+    CloudOfPoints nuage2{ nuage1 };
+    CloudOfPoints nuage3;
+    CloudOfPoints nuage4{2, 5, nuage1};// Copie les points 2 à 5 du nuage1.
+}
+\end{lstlisting}
+\item Bonus : Gérer les erreurs lors de la construction d'un nuage à l'aide des exceptions;
+\item Bonus : Pouvoir construire un nuage de la manière suivante :
+\begin{lstlisting}
+CloudOfPoints nuage5{ Point{1.,0.,0.},Point{1.,1.,0.},Point{1.,1.,1.} };
+\end{lstlisting}
+où \lstinline$Point$ est un alias sur \lstinline$std::array<double,3>$
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Les méthodes}
+\tiny
+\begin{block}{Les méthodes}
+\begin{itemize}
+\item Fonctions membres de la classe appelables via un objet;
+\item Peuvent accèder "directement" aux parties publiques et privées de l'objet appelant la méthode;
+\item Ou au travers d'un pointeur spécial \lstinline{this} pointant sur l'objet ayant appelé la méthode;
+\end{itemize}
+\end{block}
+
+\begin{lstlisting}
+class Vecteur {
+   ...
+   double normalize(); // <--- Déclaration d'une méthode
+   ...
+};
+...
+double Vecteur::normalize() { // <--- Définition de la méthode
+  double nrm = std::sqrt(m_valeurs[0]*m_valeurs[0] + m_valeurs[1]*m_valeurs[1] +
+                         m_valeurs[2]*m_valeurs[2] );
+  m_valeur[0] /= nrm; m_valeurs[1] /= nrm; m_valeurs[2] /= nrm;
+  return nrm;
+}    
+...
+Vecteur u;
+...
+u.normalize();// <--- u appelle la méthode normalize
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Méthode avec qualificateur const}
+\begin{block}{Qualification const d'une méthode}
+\begin{itemize}
+\item Rajout du mot clef \lstinline{const} à la fin de la méthode à la déclaration et à la définition;
+\item Garantit que l'objet ne sera pas modifié ( vu de l'extérieur ) en appelant cette méthode;
+\item Rajout de \lstinline{mutable} à un attribut pour le modifier dans une méthode const;
+\item Les attributs mutables doivent ne pas modifier l'objet vu de l'extérieur ( à travers l'interface ).
+\end{itemize}
+\end{block}
+\begin{lstlisting}
+class Vecteur { ...
+   double normL2() const;// Calcul de la norme L2
+   ...
+private: ...
+   mutable double m_proxy_norm;// <-- Conserve la norme calculée. 
+                               // Si coefficient modifié, on remet cette norme à -1
+};
+
+double Vecteur::sqNormL2() const {
+  if (m_proxy_norm < 0.) m_proxy_norm = std::sqrt(...);
+  return m_proxy_norm;
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Opérateurs comme méthodes de classe}
+\begin{block}{Les opérateurs}
+\begin{itemize}
+\item Possibilité de définir un opérateur comme méthode de classe;
+\item Pour opérateur unaire, pas d'arguments. Appliqué à l'objet appelant;
+\item Pour opérateur binaire, l'objet appelant se trouve à gauche de l'opérateur.
+\end{itemize}
+\end{block}
+
+\begin{lstlisting}
+class Vecteur { ...
+    Vecteur operator + ( const Vecteur& v ) const; // <--- u+v
+    Vecteur operator - () const; // <--- -u
+    ...
+};
+
+Vecteur Vecteur::operator + ( const Vecteur& v ) const { ... }
+Vecteur Vecteur::operator -() const { ... }
+
+Vecteur w = u + v;// <--- idem que w = u.operator + ( v );
+Vecteur z = -u;   // <--- idem que z = u.operator - ();
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}{Opérateurs de copie/déplacement}
+\tiny
+\begin{block}{Opérateur de copie}
+\begin{itemize}
+\item Permet de copier les données d'un objet dans un objet existant;
+\item \`A ne pas confondre avec le constructeur de copie;
+\item Défini par défaut si non déclaré;
+\item On peut le définir par défaut ou le supprimer ( \lstinline{default}, \lstinline{delete} );
+\item Utilisé implicitement pour le retour par valeur dans une fonction d'une variable globale.
+\end{itemize}
+\end{block}
+
+\begin{block}{Opérateur de déplacement}
+\begin{itemize}
+\item Permet de déplacer les données d'un objet dans un objet existant;
+\item \`A ne pas confondre avec le constructeur de déplacement;
+\item Défini par défaut si non déclaré;
+\item On peut le définir par défaut ou le supprimer ( \lstinline{default}, \lstinline{delete} );
+\item Utilisé implicitement pour le retour par valeur dans une fonction d'une variable locale.
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Opérateurs de copie/déplacement}
+\begin{lstlisting}
+class Vecteur { ...
+    Vecteur& operator = ( const Vecteur& u ); // <--- Déclaration opérateur de copie
+    Vecteur& operator = ( Vecteur&& u ) = delete; // <--- Déclaration opérateur de déplacement supprimé.
+    ...
+ };
+ 
+ Vecteur& Vecteur::operator = ( const Vecteur& u ) {
+     if ( this != &u ) { // <--- Si on cherche à copier un objet sur lui-même, on ne fait rien
+         ...
+     }
+     return *this; // On retourne l'objet appelant en référence
+ }
+ // On aurait eu un truc semblable pour l'opérateur de déplacement.
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Constructeur/Opérateur de copie}
+
+\begin{block}{Utilité du constructeur/opérateur de copie}
+\begin{itemize}
+\item Permet de copier explicitement un objet sans le détruire :
+\begin{lstlisting}
+Vecteur u( v ); // <--- Appel explicite au constructeur de copie
+Vecteur w;
+w = v; // <--- Appel explicite à l'opérateur de copie
+\end{lstlisting}
+\item Mais aussi des appels implicites à l'opérateur ou au constructeur :
+\begin{itemize}
+\item On appel une fonction dont un argument est passé par valeur;
+\item Quand on retourne par valeur un objet non local à une fonction.
+\end{itemize}
+\begin{lstlisting}
+Vecteur f( Vecteur u, Vecteur& w ) {
+  w += u;
+  return w;
+}
+
+Vecteur w = f(u,v);// Un appel au constructeur de copie et un à l'opérateur de copie
+                   // L'appel au constructeur pour u passé par valeur
+                   // L'appel à l'opérateur pour recopier le résultat dans w ( copie de v modifié ).
+\end{lstlisting}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Constructeur/Opérateur de déplacement}
+\begin{block}{Utilité du constructeur/opérateur de déplacement}
+Permet de "voler" les données d'un objet qui ne sera plus utilisé/utilisable par la suite.
+\begin{itemize}
+\item Permet de déplacer les données d'un objet vers un autre explicitement :
+\begin{lstlisting}
+Vecteur v(std::move(u));// <--- Déplace les données du u dans v via le constructeur
+Vecteur w; w = std::move(u); // <--- Déplace les données du u dans w via l'opérateur
+\end{lstlisting}
+\item Mais aussi des appels implicite lorsqu'une fonction retourne un objet local par valeur
+\begin{lstlisting}
+std::vector<double> generate_coefs( int seed ) {
+   std::vector<double> w;
+   ...
+   return w;
+}
+
+std::vector<double> u = generate_coefs(24);// <--- Effectue un déplacement du vecteur 
+                                           //      renvoyé dans le vecteur u
+\end{lstlisting}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Opérateurs de flux}
+\scriptsize
+\begin{block}{Problème}
+\begin{itemize}
+\item Permet de lire/écrire un objet dans un flux d'entrée/sortie ( écran, fichier, etc. );
+\begin{lstlisting}
+Vecteur u; ...
+std::cout << u << std::endl;
+std::ofstream fich("Sauvegarde.dat");
+fich << u;      fich.close();
+std::ifstream fich2("Sauvegarde.dat");
+fich2 >> u;     fich2.close();
+\end{lstlisting}
+\item Objet à droite des opérateurs \lstinline{<<} et \lstinline{>>} !
+\item Opérateurs doivent parfois lire/écrire dans partie privée de la classe
+\end{itemize}
+\end{block}
+
+\begin{block}{Solutions}
+\begin{itemize}
+\item Déclarer amis de la classe (\lstinline{friend}) les opérateurs de flux : pose problème pour l'héritage...;
+\item Déclarer et définir des constructeurs/méthodes pour lire/écrire dans un flux;
+\item Opérateurs de flux définis via ces constructeurs/méthodes.
+\end{itemize}
+\end{block}
+\begin{lstlisting}
+class Vecteur { ...
+    Vecteur( std::istream& inp );
+    std::ostream& print( std::ostream& out ) const;
+    ... };    
+inline std::ostream& operator << ( std::ostream& out, const Vecteur& u ) { return u.print(out); }
+inline std::istream& operator >> ( std::istream& inp, Vecteur& u )
+{ u = Vecteur(inp); return inp; }    
+\end{lstlisting}
+\end{frame}
+
+
+\begin{frame}[fragile]{Les accesseurs/modifieurs}
+\tiny
+\begin{block}{Accesseurs/modifieurs}
+\begin{itemize}
+\item permettent d'accéder/modifier des données de l'objet;
+\item En général, doit être défini deux fois : en lecture seule et en lecture/écriture;
+\item L'opérateur \lstinline$[]$ permet d'accéder à un élément
+\item L'opérateur \lstinline$()$ peut aussi servir d'accession à un élément avec un indice multiple;
+\item Les itérateurs pour accèder aux éléments séquentiellement;
+\end{itemize}
+\end{block}
+\begin{minipage}{0.59\textwidth}
+\begin{lstlisting}
+class Vecteur { 
+    typedef double* iterator;
+    typedef const double* const_iterator;
+    ...
+    double& operator [] ( std::size_t i ) {
+        assert(i < 3);
+        return m_valeurs[i]; 
+    }
+    const double& operator []( std::size_t i ) const{
+        assert(i < 3);
+        return m_valeurs[i];
+    }
+    iterator begin() { return m_valeurs.data(); }
+    const_iterator begin() const {
+        return m_valeurs.data(); }
+    iterator end() {
+        return m_valeurs.data() + 3;
+    }
+    const_iterator end() const {
+        return m_valeurs.data() + 3;
+    }
+};
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}{0.38\textwidth}
+\begin{block}{Usage}
+\begin{lstlisting}
+Vecteur a{{1.,3.,5.}};
+a[2] = 4.;
+double c = a[1];
+// Utilisation des itérateurs
+for ( auto& c : a ) 
+    c += 1.5;
+for ( auto iter = a.begin(); 
+      iter != a.end();  ++iter )
+    *iter = *iter / 2;
+\end{lstlisting}
+\end{block}
+\end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]{Cas moins trivial}
+\begin{lstlisting}
+class Matrix {
+    class iterator {
+        iterator( Matrix& mat, int i, int j) : 
+            m_ref_mat(mat),
+            m_pt_coef(mat.data()+i*mat.nbColumns()+j), 
+            m_irow(i), m_jcol(j) {}
+        iterator( const iterator& it )  = default;
+        iterator( iterator&& it ) = default;
+        ~iterator() = default;*
+               
+        bool operator != ( const iterator& it ) const {
+            return m_pt_coef != it.m_pt_coef;
+        }
+        iterator& operator ++() {
+            ++m_pt_coef;
+            ++m_jcol;
+            if (m_jcol > mat.nbColumns()) {
+                m_jcol = 0;
+                ++m_icol;
+            }
+        }
+        double& operator * () const {
+            return *m_pt_coef;
+        }
+    }
+    class const_iterator { // Programmation similaire à iterator*
+    ...
+    }
+    Matrix(...);
+    ...
+    iterator& begin() { return iterator(*this, 0, 0); }
+    iterator& end  () { return iterator(*this, nbRows(), 0); }
+    ...
+};
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Les opérateurs de conversion}
+\tiny
+\begin{block}{Convertir un objet en une instance de sa classe}
+\begin{itemize}
+\item Simplement déclarer et définir un constructeur prennant le type d'objet à convertir en argument
+\begin{lstlisting}
+class Algebra::Vecteur {
+public: ...
+    // Permet de convertir un tableau dynamique en Vecteur algébrique
+    Vecteur( const std::vecteur<double>& arr ) : ... { ... }
+    ... };
+    
+std::vector<double> arr; ...
+Algebra::Vecteur u(arr);// Convertit arr en vecteur algébrique
+\end{lstlisting}
+\item La conversion implique des copies ! ( mais difficile de faire autrement \ldots )
+\end{itemize}
+\end{block}
+
+\begin{block}{Convertir une instance de sa classe en un autre type d'objet}
+Supposons qu'on veut convertir une instance de type A en une instance de type B
+\begin{itemize}
+\item Soit la classe B est une classe conçue par le programmeur :  on revient au cas plus haut en intervertissant A et B;
+\item La classe B est une classe d'une librairie extérieure : impossible de modifier la classe B !
+\item Utiliser les opérateurs de conversion : \lstinline$ operator Type()$ en méthode de classe où \lstinline$Type$ est le nom du type dans lequel on veut convertir l'objet;
+\item Permet aussi de supprimer des interdépendances.
+\end{itemize}
+\end{block}
+\end{frame}
+\begin{frame}[fragile]{Opérateur de conversion}
+\tiny
+\begin{exampleblock}{Conversion matrice pleine et matrice creuse}
+\begin{lstlisting}
+// SparseMatrix.hpp
+class SparseMatrix { ... }
+// PlainMatrix.hpp
+# include "SparseMatrix.hpp"
+class PlainMatrix {
+    PlainMatrix( const SparseMatrix& spMat );// Convertit une matrice creuse en une matrice pleine
+    ...
+    operator SparseMatrix(); // Convertit une matrice pleine en matrice creuse.
+};
+...
+\end{lstlisting}
+\begin{itemize}
+\item Si on avait définit deux constructeurs de conversion : un pour \lstinline$PlainMatrix$, l'autre pour \lstinline$SparseMatrix$, on aurait introduit une interdépendance, difficile à gérer à la production;
+\item Ici, \lstinline$SparseMatrix$ n'a pas connaissance de l'existence de \lstinline$PlainMatrix$;
+\end{itemize}
+\end{exampleblock}
+
+\begin{exampleblock}{Conversion Vecteur à tableau dynamique}
+\begin{lstlisting}
+namespace Algebra {
+  class Vecteur { ...
+  
+  explicit operator std::vector<double>() const;// Conversion en tableau dynamique.
+  ...
+  };
+\end{lstlisting}
+\begin{itemize}
+\item Ici, pas le choix, on ne peut modifier la librairie \lstinline$vector$, donc uniquement un opérateur de conversion possible.
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Attributs et méthodes de classe}
+\tiny
+\begin{block}{Attribut de classe}
+\begin{itemize}
+\item Donnée associée à une classe et non à des instances de la classe;
+\item Peut-être accéder sans instance de classe
+\begin{lstlisting}
+namespace Parallel {
+class Context {
+public: ...
+    static Communicator global_com;
+    ...
+};
+Communicator Context::global_com{};
+\end{lstlisting}
+\end{itemize}
+\end{block}
+\begin{block}{Méthode de classe}
+\begin{itemize}
+\item Méthode associée à la classe et non pas à une instance de classe.
+\end{itemize}
+\begin{lstlisting}
+class Context { ...
+public:
+    static std::shared_ptr<Context> get() {
+        if (glob_ptr == nullptr) glob_ptr = std::make_shared<Context>();
+        return glob_ptr;
+    }
+private:
+    Context() { ... };
+    static std::shared_ptr<Context> glob_ptr;
+};
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Exercice : Nuage de points ( suite )}
+\tiny
+\begin{exampleblock}{Rajout d'opérateurs}
+ \begin{itemize}
+  \item Rajouter les opérateurs de copie/déplacement
+  \item Accéder au $i^{e}$ point $p_{i}$ pour le lire/modifier;
+  \item Rajouter les opérateurs adéquats pour que le test suivant fonctionne :
+\begin{lstlisting}
+CloudOfPoints cop1, cop2;
+...
+CloudOfPoints cop3 = cop1 + cop2;// cop3 = fusion de cop1 et cop2
+Point tr{1.,0.,0.};
+cop3 += tr; // Translation des points par le vecteur tr
+// Affiche nombre de points et les 1ers et derniers points...
+std::cout << "cop3 : " << std::string(cop3) << std::endl;
+// Sauvegarde le nuage de points :
+ifstream fich("cloud.dat"); fich << cop3; fich.close();
+\end{lstlisting}
+ \end{itemize}
+\end{exampleblock}
+
+\begin{exampleblock}{Rajout de méthodes}
+ \begin{itemize}
+  \item Rajouter une méthode donnant le nombre de points, 
+  \item Pouvoir itérer sur les points du nuage;
+  \item Calculer le point barycentre du nuage de point.
+ \end{itemize}
+\end{exampleblock}
+
+\end{frame}
+
+\begin{frame}[fragile]{L'héritage}
+\tiny
+\begin{block}{Quand utiliser l'héritage}
+\begin{itemize}
+\item Traduit une relation "être" : une matrice symétrique \textbf{est} une matrice carrée;
+\item Sert lorsqu'on veut factoriser des services communs à plusieurs objets;
+\item Sert pour spécialiser un objet;
+\item Ne pas confondre avec l'aggrégation;
+\item Le choix de hiérarchie des classes est guidée par l'application voulue.
+\end{itemize}
+\end{block}
+
+\begin{exampleblock}{Exemple de spécialisation : Vecteur algébrique}
+\begin{lstlisting}
+namespace Algebra {
+    class Vecteur : public std::vector<double>
+    {// Vecteur a accès à tous les services d'un std::vector
+     //  + d'autres services fournis dans la classe
+     Vecteur();
+     Vecteur( std::size_t dim );
+     ...
+     // Spécialisation en vecteur algébrique
+     Vecteur operator + ( const Vecteur& u ) const;// Addition de deux vecteurs...
+     ...
+    };
+}
+\end{lstlisting}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Héritage par factorisation}
+\tiny
+\begin{exampleblock}{Héritage matrices}
+\begin{minipage}{0.48\textwidth}
+\begin{lstlisting}
+class Quadrilatere {
+public:
+   ...
+   double calculAire() const { return 0; }
+};
+class Rectangle : public Quadrilatere {
+   ...
+   double calculAire() const
+   { return m_length * m_height; }
+private:
+   double m_length, m_height;
+};
+class Square : public Quadrilatere {
+   ...
+   double calculAire() const {
+       return m_length * m_length;
+   }
+};\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}{0.48\textwidth}
+\begin{itemize}
+\item On ne sait pas calculer l'aire d'un quadrilatère quelconque;
+\item Ça ne marche pas :
+\begin{lstlisting}
+double addAire( Quadrilatere a, 
+                Quadrilatere b ) {
+  return a.calculAire()+b.calculAire();
+}
+int main() {
+    Square c(3.0);
+    Rectangle r(2.0,3.0);
+    std::cout << c.calculAire() << "+" 
+              << r.calculAire() << "="
+              << addAire(c,r) << std::endl;
+    return EXIT_SUCCESS;
+}
+\end{lstlisting}
+sort à l'exécution :
+\begin{lstlisting}
+9 + 6 = 0
+\end{lstlisting}
+\end{itemize}
+\end{minipage}
+\end{exampleblock}
+
+\end{frame}
+
+\begin{frame}[fragile]{Pourquoi ça ne marche pas ?}
+\tiny
+\begin{block}{Passage des arguments par valeur}
+\begin{itemize}
+\item On copie les objets passés en argument en tant que \lstinline$Quadrilatere$;
+\item Le véritable type de l'objet passé en paramètre est oublié;
+\item Dans la fonction on ne manipule plus que des copies de ces objets en tant que \lstinline$Quadrilatere$.
+\item {\color{blue}Solution} : Passer les arguments par références sur des objets constants.
+\end{itemize}
+\end{block}
+
+\begin{block}{Appel "statique" à une méthode}
+\begin{itemize}
+\item En C++, pour raison d'efficacité, le compilateur essaie de décider quelle fonction appelée à la compilation;
+\item C'est le cas pour toutes les méthodes déclarées "normalement";
+\item Ici, il voit qu'on manipule des objet de type \lstinline$Quadrilatere$, il décide donc à la compilaton d'appeler la méthode \lstinline$calculAire$ de la classe \lstinline$Quadrilatere$
+\item {\color{blue}Solution} : Pour que la méthode appelée soit choisie dynamiquement en fonction des objets passés, il faut précéder la déclaration de la méthode du mot clef \lstinline$virtual$;
+\item Une méthode virtuelle redéfinie dans une classe fille doit posséder la même signature que la fonction virtuelle de base;
+\item Seul le type de retour peut changer à condition qu'il soit un pointeur ou une référence et que l'objet renvoyé hérite de l'objet renvoyé
+dans la classe mère;
+\item Dans beaucoup d'autres langages, les fonctions sont par défaut virtuelles ( Python, Java... ).
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Héritage par factorisation (suite)}
+\tiny
+\begin{exampleblock}{Héritage matrices}
+\begin{minipage}{0.48\textwidth}
+\begin{lstlisting}
+class Quadrilatere {
+public:
+   ...
+   virtual double calculAire() const { return 0; }
+};
+class Rectangle : public Quadrilatere {
+   ...
+   virtual double calculAire() const override
+   { return m_length * m_height; }
+private:
+   double m_length, m_height;
+};
+class Square : public Quadrilatere {
+   ...
+   virtual double calculAire() const override {
+       return m_length * m_length;
+   }
+};\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}{0.48\textwidth}
+\begin{itemize}
+\item Le mot clef \lstinline$override$ permet de s'assurer qu'on redéfinit bien une méthode virtuelle de la classe de base;
+\item Ça marche ! :
+\begin{lstlisting}
+double addAire( const Quadrilatere& a, 
+                const Quadrilatere& b ) {
+  return a.calculAire()+b.calculAire();
+}
+int main() {
+    Square c(3.0);
+    Rectangle r(2.0,3.0);
+    std::cout << c.calculAire() << "+" 
+              << r.calculAire() << "="
+              << addAire(c,r) << std::endl;
+    return EXIT_SUCCESS;
+}
+\end{lstlisting}
+sort à l'exécution :
+\begin{lstlisting}
+9 + 6 = 15
+\end{lstlisting}
+\end{itemize}
+\end{minipage}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Fonctions virtuelles pures}
+\tiny
+\begin{block}{Problématique}
+\begin{itemize}
+\item Que mettre dans la fonction \lstinline$calculAire$ de \lstinline$Quadrilatere$ ?
+\item En fait, ne connaissant pas à ce niveau le type de quadrilatère, on ne sait pas calculer l'aire;
+\item On définit une \textbf{fonction virtuelle pure} : la fonction n'est que déclarée et on devra la surcharger dans les classes dont on instanciera effectivement des objets;
+\item La classe \lstinline$Quadrilatere$ devient une \textbf{classe abstraite} :
+on ne peut instancier directement des objets de cette classe;
+\item Toute classe héritant directement ou indirectement ( au travers une hiérarchie d'héritage ) d'une classe abstraite devient \textsl{concrète} que si toutes les méthodes virtuelles pures ont été définies dans la classe ou dans la hiérarchie de classe dont elle hérite.
+\end{itemize}
+\end{block}
+\begin{lstlisting}
+class Quadrilatere {
+    ...
+    // Déclaration méthode virtuelle pure
+    virtual double calculAire() const = 0;
+};
+...
+int main()
+{
+    Quadrilatere q;// Erreur à la compilation !
+    return 0;
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Conception par contrat}
+\tiny
+\begin{block}{Carré/Rectangle : une autre hiérarchie de classe ?}
+\begin{itemize}
+\item Pourquoi ne pas avoir spécialisé la classe \lstinline$Rectangle$ en classe \lstinline$Carre$ ?
+\item Le rectangle doit stocker sa longueur et sa hauteur, le carré que sa longueur;
+\item Méthodes pour changer la longueur/hauteur du rectangle : un carré ne vérifiera plus l'égalité de la hauteur et de la longueur en poscondition de ces méthodes...
+\item Alors pourquoi ne pas dire qu'un rectangle hérite du carré ?
+\item Conception peut naturelle mais qui supprime le problème des attributs;
+\item On peut passer un rectangle en tant que carré dans des fonctions dont une pré-condition d'entrée est que la longueur soit égale à la hauteur.
+\item Notre précédente hiérarchie de classe ne posait pas ces problèmes...
+\end{itemize}
+\end{block}
+
+\begin{block}{Conception par contrat}
+\begin{itemize}
+\item Méthode proposée par Bertrand Meyer pour son langage Eiffel;
+\item \textbf{Pré-condition sur les objets} : une condition que doit vérifier les données d'un objet à l'entrée d'une méthode/fonction;
+\item \textbf{Post-condition sur les objets} : une condition que doit vérifier les données d'un objet à la sortie d'une fonction.
+\item {\color{blue}Règle pour s'assurer d'avoir un héritage cohérent} : 
+\begin{itemize}
+\item Les pré-conditions sur les objets des méthodes de la classe héritée doivent contenir les préconditions sur les objets de la classe fille;
+\item Les post-conditions sur les objets des méthodes de la classe héritée doivent être contenues dans les pré-conditions des méthodes de la classe fille;
+\end{itemize}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Le destructeur}
+\tiny
+\begin{block}{Destructeur non virtuel}
+\begin{minipage}{0.48\textwidth}
+\begin{lstlisting}
+class A { ...
+    ~A() { std::cout << "~A" << std::endl; }
+... };
+class B : public A { ...
+     B(int n) : m_coefs(new double[n]) {}
+    ~B() { delete [] m_coefs; std::cout << "~B" << std::endl; }
+    double* m_coefs; ... };
+int main() {
+    A* pt_a = new B(10);
+    delete pt_a;
+    return 0; }
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}{0.48\textwidth}
+\begin{block}{Affichage à l'exécution}
+\lstinline$~A$
+\begin{itemize}
+\item Seul le destructeur de A est appelé;
+\item Le tableau \lstinline$m_coefs$ n'est jamais détruit. 
+\item L'appel au destructeur est statique, en fonction du type du pointeur, et non de l'objet.
+\end{itemize}
+\end{block}
+\end{minipage}
+\end{block}
+
+\begin{block}{Destructeur virtuel}
+\begin{minipage}{0.48\textwidth}
+\begin{lstlisting}
+class A { ...
+    virtual ~A() { std::cout << "~A" << std::endl; }
+... };
+class B : public A { ...
+     B(int n) : m_coefs(new double[n]) {}
+    ~B() { delete [] m_coefs; std::cout << "~B" << std::endl; }
+    double* m_coefs; ... };
+int main() {
+    A* pt_a = new B(10);
+    delete pt_a;
+    return 0; }
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}{0.48\textwidth}
+\begin{block}{Affichage à l'exécution}
+\begin{verbatim}
+~B
+~A
+\end{verbatim}
+\begin{itemize}
+\item On appelle le bon destructeur ( qui appelle automatiquement celui de A );
+\item L'appel au destructeur est dynamique, il dépend du type de l'objet pointé.
+\end{itemize}
+\end{block}
+\end{minipage}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Héritage et opérateurs}
+\tiny
+\begin{block}{Opérateur de copie}
+\begin{lstlisting}
+class Quadrilatere{
+    ....
+    virtual Quadrilatere& operator = ( const Quadrilatere& ) = 0; };
+class Carre : public Quadrilatere {
+    virtual Carre& operator = ( const Quadrilatere& r ); };
+\end{lstlisting}
+\begin{itemize}
+\item \alert{Plusieurs problèmes} :
+\begin{itemize}
+\item Dans l'argument de copie de la classe \lstinline$Carre$ on peut passer un rectangle ou tout autre objet héritant de \lstinline$Quadrilater$...
+\item En détectant le type d'objet passé en argument, on va très vite arriver à une combinaison exponentielle.
+\end{itemize}
+\item {\color{blue}Solution} : Ne pas utiliser l'opérateur de copie mais une méthode \lstinline{clone}/\lstinline{copy} comme en Java ou en Python.
+\end{itemize}
+\end{block}
+
+\begin{block}{Opérateurs arithmétiques}
+\begin{itemize}
+\item Impossible de les définir dans la classe de base si ils doivent renvoyer une valeur du type de la classe de base. Il faut passer par des méthodes prenant en argument les deux arguments d'entrée et la sortie.
+\item On pourra alors définir les opérateurs arithmétiques dans les classes concrètes;
+\item Attention cependant au nombre de combinaison...
+\end{itemize}
+\begin{lstlisting}
+class Matrice {
+    ...
+    virtual Vecteur operator * ( const Vecteur& u ) const = 0;// OK
+    Matrice operator + ( const Matrice& mat ) const = 0;// Impossible, Matrice est une classe abstraite
+    virtual void add( const Matrice& mat, Matrice& resMat ) const = 0;// OK
+    ... };
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\begin{frame}{Nuage de points ( suite et fin )}
+ \begin{exampleblock}{Différents nuages}
+  \begin{itemize}
+   \item On veut créer différentes sortes de nuages de points : un représentant des pressions, d'autres des champs de vitesse à des endroits mesurés par des capteurs et un nuage qui représente des particules physique ( de poussière par exemple ) qui seront convectés par le champs de vitesse...
+   \item Pour chacun de ces nuages de points, on voudrait pouvoir calculer la pression, la vitesse ou la position moyenne du nuage;
+   \item Convecter les particules à l'aide du champs de vitesse;
+   \item Afficher sous forme de chaîne de caractère chaque nuage à l'écran avec ses valeurs associées.
+  \end{itemize}
+ \end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Bonus : les expressions littérales}
+\includepartcode{litterals.cpp}{4}{37} 
+\end{frame}
+
+\begin{frame}[fragile]{Bonus : les expressions littérales(suite)}
+\includepartcode{litterals.cpp}{38}{68} 
+\end{frame}
+
+
+\end{document}
+ 

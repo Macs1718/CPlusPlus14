@@ -1,0 +1,1488 @@
+\documentclass[handout,10pt]{beamer}
+\usetheme{Copenhagen}
+
+\usepackage{amsmath,amsfonts,graphicx}
+\usepackage{listings}
+%\usepackage{dsfont}
+\usepackage{enumitem}
+\setitemize{label=\usebeamerfont*{itemize item}%
+            \usebeamercolor[fg]{itemize item}
+            \usebeamertemplate{itemize item}}
+            
+\setlist[description]{style = multiline, labelwidth = 60pt}
+
+\usepackage{tikz} % Required for drawing custom shapes
+\usetikzlibrary{shadows, arrows, decorations.pathmorphing, fadings, shapes.arrows, positioning, calc, shapes, fit, matrix}
+
+\usepackage{polyglossia}
+
+
+\definecolor{lightblue}{RGB}{0,200,255} 
+\definecolor{paper}{RGB}{255,247,197}
+\definecolor{ocre}{RGB}{243,102,25} % Define the orange color used for highlighting throughout the book
+\definecolor{BurntOrange}{RGB}{238,154,0}
+\definecolor{OliveGreen}{RGB}{188,238,104}
+\definecolor{DarkGreen}{RGB}{0,128,0}
+\definecolor{BrickRed}{RGB}{238,44,44}
+\definecolor{Tan}{RGB}{210,180,140}
+\definecolor{Aquamarine}{RGB}{127,255,212}
+\definecolor{NavyBlue}{RGB}{0,64,128}
+
+\title[C++\hspace{2em}]{Introduction à C++ 2011}
+\author[Xavier JUVIGNY]{Xavier JUVIGNY}
+\date{\today}
+
+\institute{ONERA}
+\newcommand*\lstinputpath[1]{\lstset{inputpath=#1}}
+\lstinputpath{./exemples/1_introduction}
+\lstdefinestyle{customcpp}{
+    breaklines=true,
+    frame=shadow,
+    xleftmargin=\parindent,
+    language=C++,
+    showstringspaces=false,
+    basicstyle=\tiny\ttfamily,
+    keywordstyle=\tiny\bfseries\color{green!40!black},
+    commentstyle=\tiny\itshape\color{purple!40!black},
+    identifierstyle=\tiny\color{blue},
+    stringstyle=\tiny\color{orange!60!black},
+}
+\lstset{escapechar=@,style=customcpp}
+\newcommand{\includecode}[2][cpp]{
+\lstinputlisting[escapechar=, style=custom#1]{#2}
+}
+
+\newcommand{\includepartcode}[4][cpp]{
+\lstinputlisting[escapechar=, firstline=#3, lastline=#4, style=custom#1]{#2}
+}
+
+\begin{document}
+
+\lstset{language=C++,
+  frame=bt,
+  backgroundcolor=\color{paper},
+  basicstyle=\tiny\ttfamily,
+  keywordstyle=\color{blue}\tiny\ttfamily,
+  commentstyle=\color{red}\tiny\ttfamily,
+  stringstyle=\color{brown}\tiny\ttfamily,
+  keepspaces=true,
+  showspaces=false,
+  tabsize=4
+}
+
+\begin{frame}
+ \titlepage
+\end{frame}
+
+\begin{frame}
+\frametitle{Plan du cours}
+\tableofcontents
+\end{frame}
+
+\section{Prérequis et finalité du cours}
+
+\begin{frame}[fragile]{Prérequis et finalité du cours}
+
+  \begin{block}{Prérequis}
+    \begin{itemize}
+      \item Une bonne expérience en programmation
+      \item Si possible, une notion du langage C
+    \end{itemize}
+  \end{block}
+  
+  \begin{block}{Finalité du cours}
+    \begin{itemize}
+    \item Connaître les concepts fondamentaux de la programmation structurée, procédurale, objet et fonctionelle
+    \item Maîtriser les concepts d'interface, d'encapsulation et de reutilisabilité;
+    \item Avoir une notion d'optimisation du code et de la conception relativement complexe de classes;
+    \item Comprendre un programme C++ relativement complexe;
+    \item Comprendre la programmation par template;
+    \item Connaître les services proposés par la bibliothèque standard du C++.
+    \end{itemize}
+  \end{block}
+
+\end{frame}
+
+\section{Introduction}
+
+\begin{frame}[fragile]{le C++ en résumé}
+\tiny
+\begin{block}{Historique}
+\begin{itemize}
+  \item \textbf{1969} : Unix DEC PDP-7, langage B issu de BCPL;
+  \item \textbf{1972} : Portage d'Unix sur DEC PDP-11 : langage C;
+  \item \textbf{1980} :  C++, dérivé du C, inspiré de \textbf{Simula67} et \textbf{Algol68};
+  \item \textbf{1998} : Première normalisation du C++ par l'ISO
+  \item \textbf{2011} : $2^{e}$ normalisation  : refonte du langage
+  \item \textbf{2014} : $3^{e}$ normalisation  : corrections mineures
+  \item \textbf{2017} : $4^{e}$ normalisation  : politiques d'exécutions, \ldots;
+  \item \textbf{2020} : $5^{e}$ normalisation en cours de proposition.
+\end{itemize}
+\end{block}
+
+\begin{block}{Paradigmes du C++}
+\begin{itemize}
+ \item Langage : orienté objet, structuré, procédural, fonctionnel, universel.
+\end{itemize}
+\end{block}
+\end{frame}
+
+
+\begin{frame}[fragile]{Aperçu du langage}
+\tiny
+\hfill\begin{minipage}{0.66\linewidth}
+\begin{lstlisting}[escapechar=!, language=C++,linewidth=0.9\linewidth]
+// Ceci est un commentaire sur une ligne
+#include <iostream> // <--- inclusion module d'affichage
+#include <string> // <--- module chaîne de caractères 
+
+/* Fonction disant bonjour à <nom>
+   Input : <nom> le nom de la personne à qui
+                 le programme dit bonjour.
+*/ // <--- Commentaire multiligne
+!\tikz[remember picture] \node[](ret){};!void
+!\tikz[remember picture] \node[](fname){};!dit_bonjour( const std::string& nom!\tikz[remember picture] \node[](args) {};! )
+{ // <--- début d'un bloc d'instruction
+  std::cout << "Bonjour " << nom << "." << std::endl;
+} // <--- fin d'un bloc d'instruction
+
+// Programme principal. Retourne toujours un entier
+int main (int nargs, const char* argv[]!\tikz[remember picture] \node[](margs){};
+!) {
+    if (nargs == 1) return EXIT_FAILURE;
+    dit_bonjour( argv[1] );// <--- appel de la fonction
+    return EXIT_SUCCESS;
+}
+\end{lstlisting}
+\end{minipage}
+\begin{tikzpicture}[remember picture,overlay]
+\node[draw,above right=0.5cm and -3cm of ret, text width=1.5cm, align=center,red,fill=blue!15!white] (Ret) {Type de retour de la fonction};
+\draw[->, dashed,black!20] (ret.east) -- (Ret.east);
+\node[draw,right=-3cm of fname, text width=1.5cm, align=center,red,fill=blue!15!white] (FuncName) {Nom de la fonction};
+\draw[->,dashed,black!30] (fname.east) -- (FuncName.east);
+\node[draw,above right=0.25cm and 1cm of args, text width=1.5cm, align=center,red,fill=blue!15!white] (Args) {Liste arguments de la fonction};
+\draw[->,dashed,black!30] (args.east) -- (Args.west);
+\node[draw,right=-0.02cm and 1.2cm of margs, text width=1.5cm, align=center,red,fill=blue!15!white] (Margs) {Arguments d'entrée pour le main};
+\draw[->,dashed,black!30] (margs.east) -- (Margs.west);
+\end{tikzpicture}
+
+\begin{block}{Syntaxe de base}
+\begin{itemize}
+ \item Toutes les instructions finissent par un \lstinline$;$
+ \item Le début et la fin d'une fonction ( dont le main ) sont encadrées par \lstinline${}$
+ \item Un exécutable doit toujours définir un \lstinline$main$ mais par une bibliothèque
+ \item Une fonction peut ne rien retourner en déclarant son type de retour comme \lstinline$void$
+\end{itemize}
+\end{block}
+
+%\includecode{bonjour.cpp}
+
+\end{frame}
+
+\begin{frame}[fragile]{compilation du source}
+\tiny
+\begin{block}{Comment créer l'exécutable ?}
+\begin{itemize}
+\item Se doter d'un compilateur C++ : g++, icpp, clang++, icl, \ldots compatible c++ 2014/2011
+\item ou bien d'un ide intégré  ( visual c++, codeblock, etc. )
+\item Ligne de commande standard :
+\begin{lstlisting}[language=bash]
+c++ -o bonjour.exe -std=c++14 bonjour.cpp
+\end{lstlisting}
+\item Remplacer \lstinline$-std=c++14$ par \lstinline$-std=c++11$ pour C++ 2011
+\item Pour visualiser table des symboles ( très difficile sinon sans l'option \lstinline$-C$ ) :
+\begin{lstlisting}[language=bash]
+nm -C bonjour.exe
+\end{lstlisting}
+\item Pour vérifier si on colle au standard à la compilation : \lstinline$-pedantic$
+\item Pour pouvoir déboguer, passer l'option \lstinline$-g -O0$
+\item Pour obtenir un code optimisé : 
+\begin{itemize}
+\item Sur g++/clang++ : \lstinline$-march=native -O3$
+\item Sur icc, \lstinline$-xHost -O3$
+\end{itemize}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Variables entières}
+ \tiny
+ \begin{columns}
+  
+ \begin{column}{0.5\textwidth}
+ \begin{block}{Les booléens}
+  Type ne prenant que deux valeurs : \lstinline$true$ ( = 0 ) ou \lstinline$false$ ( $\neq 0$ )
+  \includepartcode{declarations.cpp}{12}{21}
+ \end{block}
+ \begin{block}{Les entiers}
+ \begin{itemize}
+  \item Beaucoup d'entiers : 8, 16, 32 ou 64 bits, signés ou non signés
+  \item Entiers 8 bits
+ \includepartcode{declarations.cpp}{25}{26}
+ \includepartcode{declarations.cpp}{28}{29}
+ \end{itemize}
+ \alert{Ne jamais utiliser \lstinline$char$ pour entier 8 bits : signé ou non selon les os}
+ \end{block}
+ \end{column}
+ 
+ \begin{column}{0.5\textwidth}
+ \begin{block}{Les entiers\ldots}
+ \begin{itemize}
+  \item Entiers 16 bits
+ \includepartcode{declarations.cpp}{32}{33}
+ \includepartcode{declarations.cpp}{35}{36}
+ \item Entiers 32 bits
+ \includepartcode{declarations.cpp}{38}{39}
+ \item Entier 32/64 bits ( selon os 32 ou 64 bits )
+ \includepartcode{declarations.cpp}{40}{41}
+ \item Entier 64 bits
+ \includepartcode{declarations.cpp}{42}{43}
+ \item Opérations usuelles : +, *, / (division entière ), - ( binaire ou unaire ), \% ( modulo ), -- ( décrémentation ), ++( incrémentation )
+ \item Promotion automatique : \lstinline$i + li // <-- calcul en long$
+ \end{itemize}
+ \end{block}
+ \end{column}
+ \end{columns}
+\end{frame}
+
+\begin{frame}[fragile]{Réels et complexes}
+\tiny
+\begin{block}{Les réels}
+\begin{itemize}
+\item Trois types de réels possibles :
+\begin{itemize}
+\item Simple précision ( 32 bits ): \lstinline$float$
+\item Double précision ( 64 bits )  : \lstinline$double$
+\item Précision étendue ( Au moins 64 bits ) : \lstinline$long double$ ( exemple : 80 bits si on utilise FPU d'Intel )
+\end{itemize}
+\item Opérations arithmétiques usuelles : +, -, * , / ( division réelle )
+\item Module \lstinline$cmath$ : fonctions mathématiques \lstinline$cos, sin, tan, sqrt, exp, log, ln, ...$
+\end{itemize}
+\includepartcode{declarations.cpp}{46}{50}
+\end{block}
+
+\begin{block}{Les complexes}
+\begin{itemize}
+\item Obligatoire inclure \lstinline$# include <complex>$ en entête de fichier.
+\item Divers complexes possibles, dépend de ce qu'on lui passe entre \lstinline$<>$
+\item Opérations arithmétiques usuelles, partie réelle/imaginaire : \lstinline$z.real(); z.imag();$
+\item Fonctions mathématiques : \lstinline$std::exp(z), std::cos(z), ...;$
+\includepartcode{declarations.cpp}{51}{54}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Chaînes de caractère}
+\tiny
+\begin{block}{Déclarations}
+\begin{itemize}
+\item Avec type de base : \lstinline$const char* str;$
+\item Avec type protégé ( inclure en entête de fichier \lstinline$string$ ) :
+\lstinline$std::string str;$
+\end{itemize}
+\end{block}
+\begin{block}{Opérations permises}
+\begin{itemize}
+\item Concaténation chaîne de caractères : \lstinline$str3 = str1 + str2;$
+\item Comparaison, insertion, recherche, etc\ldots
+\item Convertir chaîne de caractères en entier, réel, etc. : \lstinline$std::stoi, std::stod$, etc\ldots
+\item Par défaut, codage ISO, mais utf8, utf16 ou utf32 possibles;
+\item Existe un type brute n'interprétant pas les caractères. Délimités par trois caractères + ( et ) + les trois caractères ;
+\end{itemize}
+\includepartcode{declarations.cpp}{60}{73}
+\end{block}
+
+\end{frame}
+
+\begin{frame}[fragile]{Portée et visibilité des variables}
+\tiny
+
+\begin{block}{Visibilité des variables}
+\begin{itemize}
+\item Règles usuelles : visible dans son bloc et les sous-blocs
+\item Possibilité déclaration hors bloc : variable globale ( à éviter si possible )
+\item Deux variables ne peuvent porter le même nom dans un bloc
+\item Mais possible dans un bloc et un sous-bloc et peuvent être de types différents;
+\item Tant qu'une variable n'est pas déclarée dans un bloc, c'est la variable du bloc
+supérieur ( ou au dessus ) qui est visible;
+\item Une variable est détruite et son espace libéré à la sortie du bloc où elle a été déclarée;
+\end{itemize}
+\end{block}
+\includepartcode{visibilite.cpp}{3}{14}
+\end{frame}
+
+
+\begin{frame}[fragile]{Les pointeurs}
+\tiny
+\begin{block}{Types de pointeurs}
+\textbf{Pointeur} : valeur entière représentant une adresse ( virtuelle ) de la mémoire du programme.
+Trois types de pointeurs en C++:
+\begin{itemize}
+\item {\color{blue}Le pointeur C} ( {\bf P}lain {\bf O}ld {\bf D}ata pointer ) : entier long représentant une adresse mémoire virtuelle;
+\item {\color{blue}Le pointeur unique} : {\color{red} un seul pointeur} peut pointer sur {\color{red}une valeur donnée} qui est détruite quand plus aucun pointeur ne pointe dessus;
+\item {\color{blue}Le pointeur partagé} : {\color{red}plusieurs pointeurs} peuvent pointer sur la {\color{red}même donnée} qui est détruite lorsque plus aucun pointeur ne pointe dessus.
+\end{itemize}
+\end{block}
+
+\begin{block}{Utilisation des pointeurs C}
+\begin{itemize}
+\item Déclaration :
+\includepartcode{pointeurs.cpp}{7}{13}
+\item Accès à la valeur :
+\includepartcode{pointeurs.cpp}{17}{18}
+\item \textbf{Pointeur particulier}, le pointeur nul : \lstinline$nullptr$ de type \lstinline$nullptr_t$.
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Arithmétique des pointeurs C}
+\tiny
+\begin{block}{Incrémentation/décrémentation}
+Utile seulement pour les tableaux
+\begin{itemize}
+\item {\color{blue}Pré incrémentation} : Déplace le pointeur sur la valeur suivante et retourne le pointeur modifié; \lstinline$++pt_arr$;
+\item {\color{blue}Pré décrémentaion} : Déplace le pointeur sur la valeur précédente et retourne le pointeur modifié; \lstinline$--pt_arr$;
+\item {\color{blue}Post incrémentation} : Déplace le pointeur sur la valeur suivante et retourne l'ancienne valeur du pointeur; \lstinline$pt_arr++;$
+\item {\color{blue}Post décrémentation} : Déplace le pointeur sur la valeur précédente et retourne l'ancienne valeur du pointeur; \lstinline$pt_arr--;$
+\item les pré incrémentation/décrémentation plus efficaces que les post...
+\end{itemize}
+\end{block}
+
+\begin{block}{Arithmétique de pointeur}
+\begin{itemize}
+\item opération addition, soustraction permises :
+\includepartcode{pointeurs.cpp}{23}{25}
+\item Uniquement valable pour les pointeurs de type C;
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Pointeurs uniques}
+\tiny
+\begin{block}{Déclaration}
+\begin{itemize}
+\item Doit inclure \lstinline$memory$ en en-tête de fichier;
+\item Permet de construire une valeur dynamiquement;
+\item Un seul pointeur à la fois peut pointer sur cette valeur;
+\item Si aucun pointeur ne pointe dessus, la valeur est détruite;
+\item Pas d'arithmétique de pointeur pour ce type de pointeur;
+\item Même interface que les pointeurs C;
+\item Possibilité d'accéder au pointeur C correspondant.
+\end{itemize}
+\end{block}
+\includepartcode{pointeurs.cpp}{29}{35}
+\end{frame}
+
+\begin{frame}[fragile]{Pointeurs partagés}
+\tiny
+\begin{block}{Déclaration}
+\begin{itemize}
+\item Doit inclure \lstinline$memory$ en en-tête de fichier;
+\item Permet de construire une valeur dynamiquement;
+\item Plusieurs pointeurs peuvent pointer sur cette valeur;
+\item Si aucun pointeur ne pointe dessus, la valeur est détruite;
+\item Possibilité de connaître à chaque instant le nombre de pointeurs partageant cette valeur;
+\item Pas d'arithmétique de pointeur pour ce type de pointeur;
+\item Même interface que les pointeurs C;
+\item Possibilité d'accéder au pointeur C correspondant.
+\end{itemize}
+\end{block}
+\includepartcode{pointeurs.cpp}{39}{47}
+\end{frame}
+
+\begin{frame}[fragile]{Références}
+\tiny
+\begin{block}{Définition d'une référence}
+\begin{itemize}
+\item Renommage d'une variable;
+\item Variable partageant la même valeur qu'une autre variable ( même espace mémoire ).
+\end{itemize}
+\end{block}
+
+\begin{block}{Déclaration en C++}
+\begin{itemize}
+\item Déclaration d'une référence à l'aide du symbole \lstinline$&$;
+\item Doit être affectée obligatoirement à une autre variable à sa déclaration;
+\item Ou bien passée comme paramètre d'une fonction ( voir plus loin dans le cours ).
+\end{itemize}
+\end{block}
+\includepartcode{references.cpp}{5}{10}
+\end{frame}
+
+\begin{frame}[fragile]{Qualifieurs}
+\tiny
+\begin{block}{Constantes}
+\begin{itemize}
+\item Permet de définir une valeur non modifiable ( exemple : pi );
+\item Si cette valeur est un scalaire de type entier ou réel, elle n'est pas stockée en mémoire mais remplacée dans le code;
+\item Seul un entier constant permet de définir un tableau de taille fixe ( voir plus loin dans le cours );
+\item Permet de garantir qu'une valeur référencée ou pointée ne puisse être modifiée intentionnellement;
+\item L'opérateur \lstinline$const_cast$ permet d'enlever le qualifieur constant si besoin pour une valeur effectivement stockée en mémoire;
+\item L'opérateur \lstinline$const_cast$ appliquer à une variable définie à l'origine comme const a un comportement indéfini !;
+\item Cependant son utilisation traduit en général une mauvaison conception de l'interface.
+\end{itemize}
+\end{block}
+\includepartcode{constante.cpp}{5}{15}
+\begin{block}{Volatile}
+Empêche pour une valeur certaines optimisations ( la stocker dans le registre du processeur par exemple ) 
+dans le cas où cette variable peut être modifiée par un autre processus; ( mot clef \lstinline$volatile$ )
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Initialisation des variables}
+\tiny
+
+\begin{block}{Alias de type}
+\includepartcode{declarations.cpp}{78}{78}
+\end{block}
+
+\begin{block}{déclaration explicite}
+\includepartcode{declarations.cpp}{84}{104}
+\end{block}
+
+\end{frame}
+
+\begin{frame}[fragile]{Déclarations automatiques des variables}
+\tiny
+
+\begin{block}{déclaration implicite}
+Déduction statique du type par le compilateur
+\includepartcode{declarations.cpp}{125}{132}
+\end{block}
+
+\begin{block}{déclaration déductive}
+Déduit le type d'une variable à partir d'une expression
+\includepartcode{declarations.cpp}{137}{143}
+\end{block}
+
+\end{frame}
+
+
+% Rajouter un transparent sur les conversions de type :
+
+\begin{frame}[fragile]{TD 1 : prise en main}
+\tiny
+\begin{block}{Problème}
+Écrire une petite calculatrice permettant d'effectuer des opérations élémentaires.
+\end{block}
+
+\begin{block}{Aide}
+Chercher sur \texttt{en.cppreference.com} comment utiliser std::stod, std::stol, etc.
+\end{block}
+
+\begin{block}{Bonus}
+Généraliser la calculatrice à une calculatrice polonaise inversée
+\begin{itemize}
+\item \begin{lstlisting}
+try { 
+    ...
+    std::stod(...); 
+    ...
+} catch(std::invalid_argument) { 
+    // traitement opérateur
+}
+\end{lstlisting}
+\item Regarder \texttt{std::stack$<$(type élément)$>$} sur \texttt{en.cppreference.com}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Accès par valeurs, pointeur et références}
+\tiny
+\begin{block}{Accès par valeurs}
+On copie la valeur à droite du signe \texttt{=} 
+\begin{lstlisting}
+double a = 3; double b = a;
+a = 4;
+std::cout << "b = " << b << std::endl;// Affiche 3
+\end{lstlisting}
+\end{block}
+
+\begin{block}{Accès par pointeur}
+On copie l'adresse de la variable à droite du signe \texttt{=} 
+\begin{lstlisting}
+double a = 3;       double* pt_b = &a;
+a = 4;
+std::cout << "*pt_b = " << *pt_b << std::endl;// Affiche 4
+\end{lstlisting}
+\end{block}
+
+\begin{block}{Accès par référence}
+On définit un alias de la variable à droite du signe \texttt{=}
+\begin{lstlisting}
+double a = 3;   double& b = a;
+a = 4;
+std::cout << "b = " << b << std::endl;// Affiche 4
+b = 2;
+std::cout << "a = " << a << std::endl;// Affiche 2
+\end{lstlisting}
+\end{block}
+
+\end{frame}
+
+\begin{frame}[fragile]{Conversion}
+\tiny
+\begin{block}{Conversion explicite}
+Conversion sans vérification. La conversion se fait contre "vents et marées".
+\includepartcode{conversion.cpp}{8}{16}
+\end{block}
+
+\begin{block}{Conversion statique}
+Le compilateur vérifie que la conversion soit possible
+\includepartcode{conversion.cpp}{20}{27}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Structure}
+ \tiny
+ \begin{block}{Structure}
+  \begin{itemize}
+  \item Syntaxe définition :
+  \begin{lstlisting}
+  struct nom_nouveau_type {
+     type1 nom1;
+     type2 nom2;
+     ...
+     type_ret fonction1( args ) [const] { ... }
+     ... };
+\end{lstlisting}
+
+   \item Permet la définition de nouveau type contenant plusieurs types déjà définis;
+   \item Accès champs à champs, possibilité de définir tous les champs en un coup;
+   \item On peut aussi définir des fonctions associées aux données contenues dans la structure ( on verra plus en détail dans le chapitre sur l'objet ).
+  \end{itemize}
+  \begin{lstlisting}
+  struct employe_onera {
+    std::string nom, prenom;
+    int id_badge, num_ldap;
+  };
+  employe_onera chambier { .nom = "Chambier", .prenom = "Robert", .id_badge=7, .num_ldap=1007 };
+  std::cout << chambier.nom << std::endl;
+  employe_onera *pt_e = &chambier; int id = pt_e->id_badge;
+\end{lstlisting}
+\end{block}
+\begin{exampleblock}{Exercice}
+\'Ecrire un programme permettant pour un point donné en 2D de calculer si il appartient ou non à un triangle ( utiliser les aires signées ).
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Union}
+\tiny
+\begin{block}{Union}
+\begin{itemize}
+ \item Syntaxe :
+\begin{lstlisting}
+union nom_nouveau_type {
+   type1 nom1;
+   type2 nom2;
+   ... };
+\end{lstlisting}
+ \item Permet de définir un type pouvant contenir exclusivement un des types listés;
+ \item La taille d'une variable de type union est la plus grande des tailles des types donnés dans l'union.
+\end{itemize}
+\begin{lstlisting}
+union long_int_64 {
+    unsigned long val;
+    unsigned int  vals[2];
+};
+long_int_64 i; 
+i.vals[0] = 10; i.vals[1] = 12;
+std::cout << i.val << std::endl:
+\end{lstlisting}
+\end{block}
+
+\begin{exampleblock}{Exercices}
+ \begin{itemize}
+  \item \'Ecrire un programme permettant d'écrire la représentation hexadécimale d'un réel double précision :
+  Regarder documentation de \lstinline$std::hex$ sur internet 
+ \end{itemize}
+
+\end{exampleblock}
+
+\end{frame}
+
+\begin{frame}[fragile]{Les énumérés}
+\tiny
+\begin{block}{Définition}
+\begin{itemize}
+\item Permet une énumération de valeurs; Généralement représentées par un chiffre en C++;
+\item \'Enumération fixée à la compilation; Pas possible de rajouter de nouveaux éléments;
+\item Permet de restreindre à certaines valeurs une catégorie;
+\item Valeurs d'un énuméré non modifiables;
+\end{itemize}
+\end{block}
+\includepartcode{enumeres.cpp}{5}{21}
+\end{frame}
+
+\begin{frame}[fragile]{Tableaux statiques}
+\tiny
+\begin{block}{Déclarations et initialisations}
+bibliothèque : \texttt{array} : Défini des tableaux alloués à la compilation
+\begin{lstlisting}
+# include <array>
+    std::array<unsigned,3> grid_indices;
+    std::array<double,5> arr{ {1.0035, 1.0,, 0., 0., 0.45} };
+    std::array<double,4> arr2 = {1.01,0.0,1.0};
+    std::array<int,2> dirs = {1,2,3}; // Erreur !
+\end{lstlisting}
+\end{block}
+
+\begin{block}{Accesseurs}
+Permet d'accéder aux données du tableau :
+\begin{lstlisting}
+    arr.size(); // Nombre d'éléments contenus dans le tableau
+    arr.data(); // Renvoie un pointeur sur le premier élément du tableau
+    arr.fill(val);// Rempli le tableau avec la valeur val
+    arr.swap(arr2);// Permute les valeurs de arr et arr2
+\end{lstlisting}
+\end{block}
+
+\begin{block}{Comparateurs}
+Permet de comparer deux tableaux
+\begin{lstlisting}
+    if ( arr == arr2 ) {
+        ...
+    }// Marche pour tous les comparateurs ( ==, !=, <, >, <=, >= )
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Tableaux dynamiques}
+\tiny
+\begin{block}{Dynamique}
+bibliothèque \texttt{vector} : Des tableaux alloués à l'exécution et dont la taille peut être modifiée
+\begin{lstlisting}
+# include <vector>
+    std::vector<double> vecFld;//Tableau vide encore non alloué
+    std::vector<int> indices(nijk);// Tableau de taille ni*nj*nk
+    std::vector<float> sol(nijk, 0.f);// Tableau taille nijk init. à 0
+    std::vector<std::vector<double>> mat;// Tableau de tableau...
+    std::vector<double> coef{ { 1., 1.5, 2., 2.5 } };
+    std::vector<std::string> token = { "parallel_for", "conv_flux" };
+    std::vector<double> varr(arr.data(), arr.data()+3);
+\end{lstlisting}
+\end{block}
+
+\begin{block}{Accesseurs}
+\begin{lstlisting}
+    sol.size();// Nombre d'elements contenus
+    mat.emplace_back({-1.,4.,-1.,0.});// Rajoute un élt en fin de tableau
+    sol.push_back(3.5f);// Rajoute un élément en fin de tableau
+    sol.pop_back();// Enlève le dernier élt.
+    vecFld.reserve(5*nijk);// Alloue 5*nijk élts
+    vecFld.data();// Pointeur sur l'adresse du 1er élt.
+    sol.resize(nijk/2);//Redimensionne le tableau
+    sol.capacity(); // Nombre d'elements reserves
+    sol.shrink_to_fit();// Realloue le tableau à la bonne taille
+    std::vector<double>(123).swap(sol);// échange 2 tableaux
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Accès directs aux éléments d'un tableau}
+\tiny
+\begin{block}{Accès direct}
+\begin{itemize}
+\item Sans vérification d'indice :
+\begin{lstlisting}
+// Pour gnu c++, on peut rajouter à la compilation :
+// -----------------------------------------------
+// -D_GLIBCXX_DEBUG : Pour vérifier les indices
+// -D_GLIBCXX_DEBUG_PEDANTIC : Encore + de vérif.
+arr[7] = 13;
+\end{lstlisting}
+\item Avec vérification d'indice ( accès plus lent que sans vérification ):
+\begin{lstlisting}
+arr.at(13) = 257;// Génère une erreur de type std::out_of_range
+\end{lstlisting}
+\item Accès premier élément du tableau
+\begin{lstlisting}
+arr.front() = 2.;
+\end{lstlisting}
+\item Accès dernier élément du tableau
+\begin{lstlisting}
+arr.back() = 2.;
+\end{lstlisting}
+\end{itemize}
+\end{block}
+
+\end{frame}
+
+\begin{frame}[fragile]{Accès séquentiels aux éléments d'un tableau}
+\tiny
+\begin{block}{Accès séquentiel en avant}
+\begin{itemize}
+\item Par boucle, en mode C :
+\begin{lstlisting}
+for (int i = 0; i < arr.size(); ++i ) arr[i] = 0.;
+\end{lstlisting}
+\item Avec itérateur ( mode C++ 98 ) :
+\begin{lstlisting}
+for ( auto it = arr.begin(); it != arr.end(); ++it ) *it = 0.;
+\end{lstlisting}
+\item Par boucle, en mode C++ 11 :
+\begin{lstlisting}
+for ( double& val : arr ) val = 0.;
+\end{lstlisting}
+\end{itemize}
+\end{block}
+
+\begin{block}{Accès séquentiel en arrière}
+\begin{itemize}
+\item Par boucle, en mode C :
+\begin{lstlisting}
+for (int i = arr.size()-1; i >= 0; --i ) arr[i] = 0.;
+\end{lstlisting}
+\item Avec itérateur  :
+\begin{lstlisting}
+for ( auto it = arr.rbegin(); it != arr.rend(); ++it ) *it = 0.;
+\end{lstlisting}
+\end{itemize}
+\end{block}
+
+\end{frame}
+
+\begin{frame}[fragile]{Autres conteneurs}
+\tiny
+\begin{block}{Liste doublement chainée}
+Bibliothèque : \lstinline{#include <list>} :
+\begin{lstlisting}
+std::list<double> lst1;
+std::list<int> lst2{ {1,3,5,7,11} };
+lst1.emplace_back(3.5);
+lst1.emplace_front(3.1);
+lst2.push_back(13); lst2.pop_front();
+for ( auto it = lst2.begin(); it != lst2.end(); ++it ) *it = -1;
+for ( auto& val : lst1 ) val = 3.1415;
+\end{lstlisting}
+\end{block}
+
+\begin{block}{Ensemble ordonné}
+Collection de valeurs uniques.Bibliothèque : \lstinline{#include <set>}. Existe aussi en non ordonné ( \lstinline$unordered_set$ )
+\begin{lstlisting}
+std::set<int> indices{ {0, 3, 10, 13} };
+indices.insert(10); // 10 existe déjà, ne l'insère pas.
+\end{lstlisting}
+\end{block}
+
+\begin{block}{Dictionnaire ordonné}
+Bibliothèque : \lstinline{#include <map>}.Existe aussi avec fonction de hashage ( \lstinline$unordered_map$ ).
+\begin{lstlisting}
+std::map<std::string,int> id_personnes;
+id_personnes["philippe"] = 8905;
+id_personnes["Gérard"]   = 9103;
+std::map<std::string,int> annee_perso { {"philippe", 1983},
+                                        {"gérard"  , 1967} };
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Les tuples}
+ \tiny
+ \begin{block}{Les paires}
+ \begin{itemize}
+  \item Permet de définit une paire d'objet de type différents
+  \item Création à l'aide de \lstinline$std::make_pair$
+  \item Accès au premier et second élément : \lstinline$p.first$ et \lstinline$p.second$
+ \end{itemize}
+\begin{lstlisting}
+auto p = std::make_pair(1, "Premier");
+std::cout << p.first << " et " << p.second << std::endl;
+auto p2 = std::make_pair(std::ref(p), "First");
+\end{lstlisting}
+ \end{block}
+
+ \begin{block}{Les tuples}
+  \begin{itemize}
+   \item Comme une paire mais avec un nombre quelconque d'objets
+   \item Création à partir de  \lstinline$std::make_tuple$
+   \item On peut récupérer des données d'un tuple à l'aide de \lstinline$std::get$ ou \lstinline$std::tie$
+   \item Permet de dissocier pour une fonction les paramètres d'entrées ( en argument ) des paramètres de sortie ( en retour avec un tuple si besoin).
+  \end{itemize}
+\begin{lstlisting}
+auto trigo( double x ) { return std::make_tuple(std::cos(x),std::sin(x),std::tan(x)); }
+...
+double c,s;
+std::tie(c,s,std::ignore) = trigo(3.1415);
+auto tpl = std::make_tuple("Chat", 3.14, 5);
+std::cout << std::get<0>(tpl) << ", " << std::get<1>(tpl) << " et " << std::get<2>(tpl) << std::endl;
+\end{lstlisting}
+
+ \end{block}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Manipulation des conteneurs}
+\tiny
+\begin{exampleblock}{Générer l'ensemble des nombres impairs}
+Au moins deux solutions possibles
+\end{exampleblock}
+
+\begin{exampleblock}{Statistique d'une chaîne de caractère}
+\begin{itemize}
+\item Compter les minuscules, les majuscules, les chiffres, autres
+\item Afficher en fin de programme les caractères trouvés ( en un seul exemplaire chacun )
+\end{itemize}
+{\color{red}{\bf Hint}} : regarder doc de \lstinline{#include <cctype>}
+\end{exampleblock}
+
+\begin{exampleblock}{Bonus : Gérer un carnet d'adresse}
+\begin{itemize}
+\item fiche personne : nom, prénom, adresse, num. téléphone, num.sécurité sociale.
+\item Rajouter une personne;
+\item Rechercher une personne par son nom et prénom
+\item Afficher toutes les personnes de la base de donnée.
+\end{itemize}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Déclaration des fonctions}
+\tiny
+\begin{block}{Déclaration}
+\begin{itemize}
+\item Façon C :
+\begin{lstlisting}
+double sqr (double x ) {
+    return x*x;
+}
+\end{lstlisting}
+\item Façon C++ 11 ( notation fonctionnelle ):
+\begin{lstlisting}
+auto sqr (double x ) -> double {
+    return x*x;
+}
+\end{lstlisting}
+\item Façon C++ 2014 ( notation fonctionnelle simplifiée ):
+\begin{lstlisting}
+auto sqr (double x ) {
+    return x*x;
+}
+\end{lstlisting}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Modes de passage des arguments}
+\tiny
+\begin{block}{Par valeurs}
+\textbf{Copie} de l'argument. Valeur de
+l'argument inmodifiable.
+\begin{lstlisting}
+void f( std::vector<double> a ) // <-- on recopie dans a
+                                //  le vecteur passé en argument
+{ ... }
+f(arr);
+\end{lstlisting}
+\end{block}
+
+\begin{block}{Par pointeurs}
+Passagge explicite de l'adresse de l'argument. Valeur de l'argument modifiable.
+\begin{lstlisting}
+void f( std::vector<double>* pt_a )
+{ ... pt_a->resize(...); ... }
+f(&arr);
+\end{lstlisting}
+\end{block}
+
+\begin{block}{Par référence}
+Référence sur l'argument. Valeur de l'argument modifiable
+\begin{lstlisting}
+void f( std::vector<double>& a )
+{ ... a.resize(...); ... }
+f(arr);
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Passage par référence}
+\tiny
+\begin{block}{Passage par référence}
+Utiliser dans la signature d'une fonction pour
+\begin{itemize}
+\item Pouvoir modifier la variable passée en paramêtre;
+\item Éviter de copier la variable passée en paramêtre.
+\end{itemize}
+Inconvénients :
+\begin{itemize}
+\item Impossible de passer directement une valeur non stockée dans une variable;
+\item Variable passée en paramêtre modifiable pour éviter une copie.
+\end{itemize}
+\end{block}
+
+\begin{block}{Passage par référence constante}
+Rajout du mot clef \lstinline{const} dans la signature
+\begin{itemize}
+\item Éviter une copie sans rendre modifiable la variable passée en paramêtre;
+\item Permet de passer des valeurs.
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Exemples passage par référence}
+\tiny
+\begin{lstlisting}
+using vecteur = std::vector<double>;
+
+double normalize_inplace ( vecteur& u )
+{ double nrm = ...; u[0] /= nrm; u[1] /= nrm; u[2] /= nrm; }
+
+void transpose_inplace ( const vecteur& tr, vecteur& u )
+{ u[0] += tr[0]; u[1] += tr[1]; u[2] += tr[2]; }
+
+int main ()
+{
+   vecteur u(3);
+   ...
+   normalize_inplace ( u );// Normalise u
+   transpose_inplace ( vecteur{ {1., 0., -1.} }, u );
+   ...
+   // Erreur : on ne peut pas passer une valeur
+   normalize_inplace ( vecteur{ {1., 1., 1.} } );
+}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Retour d'une fonction}
+\tiny
+\begin{block}{Retour par valeur}
+\lstinline{std::vector<double> f (...)}
+
+Deux modes de retour induits : 
+\begin{itemize}
+\item {\textcolor{orange}{Par copie}} : si retourne variable non locale ou scalaire. Pour tableau, recopie élément par élément dans nouveau tableau sur tas.
+\item {\textcolor{orange}{Par déplacement}} ; Si retourne variable locale ou si spécifie retour avec instruction \lstinline$std::move$. Pour un tableau, on crée un nouveau tableau qui va "voler" le pointeur du tableau retourné.
+\end{itemize}
+\end{block}
+
+\begin{block}{Retour par référence}
+\lstinline{std::vector<double>& f (...)}
+
+Retourne un "alias" sur une variable qui doit être 
+\begin{itemize}
+\item Un paramètre de la fonction;
+\item une variable globale.
+\end{itemize}
+\alert{Ne jamais retourner une variable locale par référence !}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Surcharge des fonctions et paramètres par défaut}
+\tiny
+\begin{block}{Surcharge fonctions}
+Possibilité de redéfinir même fonction avec signatures différentes.
+\begin{lstlisting}
+int pow_n( int x, int n ) { 
+  return (n==0 ? 1 : n&1 ? x*pow_n(x*x,(n-1)/2) : pow_n(x*x,n/2)); }
+float pow_n( float x, int n ) { 
+  return (n==0 ? 1 : n&1 ? x*pow_n(x*x,(n-1)/2) : pow_n(x*x,n/2)); }
+double pow_n( double x, int n ) { 
+  return (n==0 ? 1 : n&1 ? x*pow_n(x*x,(n-1)/2) : pow_n(x*x,n/2)); }
+int main() { ...
+  int    iy = pow_n( 13, 5 );
+  double  y = pow_n( 11.5, 7 );
+\end{lstlisting}
+\end{block}
+
+\begin{block}{Paramètres par défaut}
+Paramètres optionels. Toujours derniers paramètres. Uniquement définis à la déclaration.
+\begin{lstlisting}
+double daxpy( int n,const double* x,double* y,int incx=1, int incy=1);
+...
+double daxpy( int n, const double* x, double* y, int incx, int incy ) {
+ double sum = 0.; for (int i = 0; i < n; ++i ) sum += x[incx*i]*y[incy*i];
+ return sum; }
+int main() { ...
+   d  = daxpy( arr.size(),arr.data(),arr2.data() ); // incx=1, incy=1
+   d2 = daxpy( arr.size(),arr.data(),arr2.data(),2 ); // incx=2,incy=1
+   d3 = daxpy( arr.size(),arr.data(),arr2.data(),2,2 ); // incx=2, incy=2
+\end{lstlisting}
+\end{block}
+
+\end{frame}
+
+\begin{frame}[fragile]{Surcharge des opérateurs}
+\tiny
+\begin{block}{Redéfinition d'un opérateur}
+\begin{itemize}
+\item Possibilité de redéfinir des symboles
+\item Pour opérateurs binaires, premier argument correspond à la valeur à gauche de l'opérateur.
+\end{itemize}
+\begin{lstlisting}
+std::vector<double> operator +( const std::vector<double>& u,
+                                const std::vector<double>& v )
+{   assert(u.size() == v.size());
+    std::vector<double> w(u.size());
+    for ( size_t i = 0; i < u.size(); ++i ) w[i] = u[i]+v[i];
+    return w; }
+...
+auto w = u + v;
+\end{lstlisting}
+\end{block}
+
+\begin{block}{Opérateur de flux}
+Pour lire/écrire un nouveau type sur fichier/console/etc.
+\begin{lstlisting}
+std::ostream& operator << ( std::ostream& out, 
+                            const std::vector<double>& u ) {
+    out << "< "; for (const auto& v : u ) out << v << " "; out << ">";
+    return out;
+}
+std::istream& operator >> ( std::istream& inp, std::vector<double>& u ) {
+    ...
+    return inp;
+}
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Liste des opérateurs ( non exhaustif )}
+\tiny
+\lstset{language=C++,
+  frame=single,
+  backgroundcolor=\color{white},
+  basicstyle=\tiny\ttfamily,
+  keywordstyle=\color{blue}\tiny\ttfamily,
+  commentstyle=\color{red}\tiny\ttfamily,
+  stringstyle=\color{brown}\tiny\ttfamily,
+  keepspaces=true,
+  showspaces=false,
+  tabsize=4
+}
+
+\begin{tabular}{cccr}
+ {\textcolor{red}{\bf Opérateurs arithmétiques}} & & &\\ \hline
+    $+$ & binaire & \lstinline$t operator + ( const t&, const t& )$ & Addition\\
+    $-$ & unaire  & \lstinline$t operator - ( const t& )$ & Opposé \\
+    $-$ & binaire & \lstinline$t operator - ( const t&, const t& )$ & Soustraction\\
+    $*$ & binaire & \lstinline$t operator * ( const t&, const t& )$ & Multiplication\\
+    $/$ & binaire & \lstinline$t operator / ( const t&, const t& )$ & Division\\
+    \% & binaire  & \lstinline$t operator % ( const t&, const t& )$ & Modulo \\  
+{\textcolor{red}{\bf Opérateurs d'affectation et inplace}} & & & \\ \hline
+    $=$  & binaire & \lstinline$t& operator  = ( t&, const t& )$ & Copie\\
+    $+=$ & binaire & \lstinline$t& operator += ( t&, const t& )$ & Addition inplace\\
+    $-=$ & binaire & \lstinline$t& operator -= ( t&, const t& )$ & Soustraction inplace\\
+    $*=$ & binaire & \lstinline$t& operator *= ( t&, const t& )$ & Multiplication inplace\\
+    $/=$ & binaire & \lstinline$t& operator /= ( t&, const t& )$ & Division inplace\\
+    $\%=$& binaire & \lstinline$t& operator %= ( t&, const t& )$ & Modulo inplace \\
+{\textcolor{red}{\bf Opérateurs de comparaison}} & & & \\ \hline
+    $==$ & binaire & \lstinline$bool operator ==( const t&, const t& )$ & Comparaison égalité \\
+    $>$  & binaire & \lstinline$bool operator  >( const t&, const t& )$ & Supérieur à \\
+    $<$  & binaire & \lstinline$bool operator  <( const t&, const t& )$ & Inférieur à \\
+    $<=$ & binaire & \lstinline$bool operator <=( const t&, const t& )$ & Inférieur ou égal à \\
+    $>=$ & binaire & \lstinline$bool operator >=( const t&, const t& )$ & Supérieur ou égal à \\
+    $!=$ & binaire & \lstinline$bool operator !=( const t&, const t& )$ & Différent de \\
+{\textcolor{red}{\bf Opérateurs d'accés}} & & &\\ \hline
+    [] & binaire & \lstinline$(const) t& operator []( (const) t&, const Ind& )$ & Accesseur mono indice \\
+    *  & unaire  & \lstinline$(const) t& operator * ( (const) pt_t& )$ & Opérateur de dérérencement     \\
+    -> & unaire  & \lstinline$(const) t& operator ->( (const) pt_t& )$ & Opérateur d'accès pointeur     \\
+{\textcolor{red}{\bf Pré/Post incrément}} & & &\\ \hline
+    ++ & unaire  & \lstinline$t operator ++ ( t& )$ & Pré incréméntation \\
+    ++ & unaire  & \lstinline$t operator ++ ( const t&, int )$ & Post incrémentation \\
+    -- & unaire  & \lstinline$t operator -- ( t& )$ & Pré décréméntation \\
+    -- & unaire  & \lstinline$t operator -- ( const t&, int )$ & Post décrémentation \\   
+{\textcolor{red}{\bf Autres}} & & &\\ \hline
+    () & n-aire & \lstinline$Out operator () ( arg1, arg2, ..., argn )$ & \'Evaluateur/Accesseur \\
+\end{tabular}
+\end{frame}
+
+
+\begin{frame}[fragile]{Les exceptions}
+\tiny
+\begin{block}{Utilité}
+\begin{itemize}
+\item Erreurs
+\item Traitement d'un cas rare où exceptionnel;
+\end{itemize}
+\alert{Les exceptions font partie de la conception de l'interface}
+\end{block}
+
+\begin{block}{Propriétés}
+\begin{itemize}
+\item Extensible
+\item Saut automatique de contexte
+\item Délègue le traitement de l'erreur à l'appelant
+\end{itemize}
+\end{block}
+
+\begin{block}{Principe}
+\begin{itemize}
+\item \lstinline$throw$ : lancer un signal d'erreur ( entier, string, autre )
+\item \lstinline$try {... code protégé ...} catch(type1& e1) ... traitement erreur 1 ... catch(type2& e2) ... traitement erreur 2 ...$: Mise en bloc de la zone à protéger.
+\alert{les erreurs non rattrapées sont renvoyer plus haut dans la pile d'appel}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Les exceptions - 2}
+
+\begin{block}{La levée de l'exception}
+\begin{lstlisting}
+std::pair<double,double> find_root( double b, double c ) {
+    double delta = b*b - 4*c;
+    if (delta < 0) throw std::string("Negative discriminant");
+    return {0.5*(-b + std::sqrt(delta)),0.5*(-b - std::sqrt(delta))};
+}
+\end{lstlisting}
+\end{block}
+
+\begin{block}{Protection d'une zone de code}
+\begin{lstlisting}
+try {
+  auto sols = find_root( 3, -1. );
+} catch(std::string& msg)
+{
+  std::cerr << "Erreur en cherchant les racines : " << msg 
+            << std::endl;
+}
+\end{lstlisting}
+\end{block}
+\end{frame}
+
+\begin{frame}{Les exceptions - 3}
+\tiny
+\begin{block}{Exceptions prédéfinies}
+dans \lstinline{stdexcept}
+\begin{itemize}
+\item \textcolor{violet}{Logic errors}
+\begin{itemize}
+\item \lstinline$logic_error$ : Logic error exception 
+\item \lstinline$domain_error$ : Domain error exception
+\item \lstinline$invalid_argument$ : Invalid argument exception
+\item \lstinline$length_error$ : Length error exception
+\item \lstinline$out_of_range$ : Out-of-range exception
+\end{itemize}
+\item \textcolor{violet}{Runtime errors}
+\begin{itemize}
+\item \lstinline$runtime_error$ : Runtime error exception
+\item \lstinline$range_error$ : Range error exception
+\item \lstinline$overflow_error$ : Overflow error exception
+\item \lstinline$underflow_error$ : Underflow error exception
+\end{itemize}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Les exceptions - 4}
+\tiny
+\begin{block}{Gestion EAFP}
+Easier to Ask for Forgiveness than Permission
+\begin{minipage}{0.49\textwidth}
+\begin{lstlisting}
+if (determinant(A) != 0) {
+     inverse_system(A,b,x);
+} else {
+     project_solution(A,b,x);
+}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.49\textwidth}
+\begin{lstlisting}
+try {
+    inverse_system(A,b,x);
+} catch(std::underflow_error&) {
+    project_solution(A,b,x);
+}
+\end{lstlisting}
+\end{minipage}
+\end{block}
+
+\begin{block}{Big brother}
+Bigger protected block, better performance
+\begin{minipage}{0.49\textwidth}
+\begin{lstlisting}
+for ( int i = 0; i < nijk; ++i ){
+ try {
+   comp_speed(rho[i],rho_u[i],u[i]);
+ } catch(std::underflow_error&){ ... }
+}
+\end{lstlisting}
+\end{minipage}
+\begin{minipage}{0.49\textwidth}
+\begin{lstlisting}
+try {
+  for ( int i = 0; i < nijk; ++i ){ 
+    comp_speed(rho[i],rho_u[i],u[i]);
+  }
+} catch(std::underflow_error&){ }
+\end{lstlisting}
+\end{minipage}
+\end{block} 
+\end{frame}
+
+\begin{frame}[fragile]{Les entrées/sorties (\texttt{fstream})}
+ \tiny
+ \begin{block}{Ouverture/création fichiers}
+  \begin{itemize}
+   \item Création d'un flux en lecture/écriture :
+   \begin{itemize}
+   \item \lstinline$std::ifstream fich(nom_fich)$ : Ouverture en lecture d'un fichier;
+   \item \lstinline$std::ofstream fich(nom_fich)$ : Ouverture en écriture d'un fichier ( écrase l'ancien );
+   \item \lstinline$std::ofstream fich(nom_fich,mode)$ : Ouverture en écriture d'un fichier selon un ou plusieurs modes définis (exemple : \lstinline$ios::out|ios::app$) :
+   \begin{itemize}
+   \item \lstinline$ios::out$ : Ouverture en mode écriture ( défaut )
+   \item \lstinline$ios::trunc$ : Tronque ( efface ) l'ancien fichier si il existait déjà et remplace par un nouveau;
+   \item \lstinline$ios::app$   : Rajoute à la suite du fichier si il existait déjà. Impossible d'écraser ce qui existait déjà même en se déplaçant en ``début'' de fichier;
+   \item \lstinline$ios::ate$   : Rajoute à la suite du fichier si il existait déjà. On peut écraser les données précédentes en se déplaçant en début de fichier par exemple.
+   \end{itemize}
+   \end{itemize}
+   \item On peut tester si l'ouverture s'est correctement déroulé : \lstinline$if (fich) ...$
+  \end{itemize}
+ \end{block}
+
+ \begin{block}{\'Ecrire/Lire dans un fichier formaté}
+  \begin{itemize}
+  \item \'Ecrire
+\begin{lstlisting}
+   int i = 5; double x = 3.14; std::string chaine("strange data...");
+   fich << i << x << chaine;
+\end{lstlisting}
+   \item Lire
+\begin{lstlisting}
+   int i; double x; std::string chaine;
+   fich >> i >> x >> chaine;
+\end{lstlisting}
+  \end{itemize}
+ \end{block}
+ 
+\end{frame}
+
+\begin{frame}[fragile]{Les entrées/Sorties (suite)}
+\tiny
+ \begin{block}{Changer le format des nombres sauvegardés (\texttt{iomanip})}
+ \begin{itemize}
+ \item \lstinline$std::setprecision(n)$ : \'Ecrit $n$ chiffres après la virgule;
+ \item \lstinline$std::fixed,std::scientific,std::hexfloat,std::defaultfloat$ : divers formats...
+ \item \lstinline$std::setw(n)$ : Affiche le prochain ``objet'' sur $n$ caractères.
+ \item \lstinline$std::setfill(c)$ : Remplit les ``trous'' avec le caractère $c$
+ \end{itemize}
+ \end{block}
+
+ \begin{block}{Autre utilitaire de lecture formatée}
+  \begin{itemize}
+   \item \lstinline$fich.getline(buffer,n[,delim])$ : Lit ligne entière ( $n$ caractères max). Fin ligne définie par o.s,
+   sauf si \lstinline$delim$ précisé.
+   \item \lstinline$fich.get(c)$ : Lit le caractère $c$ dans le fichier
+   \item \lstinline$fich.ignore(n)$: Lit sans stocker $n$ caractères du fichier;
+   \item \lstinline$fich.peek()$ : Lit le caractère courant sans avancer dans le fichier;
+   \item \lstinline$fich.seekg(offset,pos)/fich.tellg()$ : Met/Donne la position dans le fichier
+  \end{itemize}
+ \end{block}
+
+ 
+ \begin{block}{\'Ecrire/lire dans un fichier binaire}
+  \begin{itemize}
+   \item \'Ecrire : \lstinline$fich.write(buffer, size);$ où \lstinline$char* buffer;$;
+   \item Lire     : \lstinline$fich.read(buffer,size);$ où \lstinline$char* buffer;$.
+  \end{itemize}
+ \end{block}
+ 
+ \begin{block}{Fermer un fichier}
+    \begin{itemize}
+     \item \lstinline$fich.close()$
+    \end{itemize}
+ \end{block} 
+\end{frame}
+
+\begin{frame}[fragile]{Autres entrées/sorties}
+\tiny
+ \begin{block}{Lecture/\'Ecriture dans une chaîne de caractères (\texttt{sstream})}
+  \begin{itemize}
+   \item Permet de former dynamiquement des chaînes de caractères; Même interface que pour un fichier + quelques autres opérations
+  \end{itemize}
+\begin{lstlisting}
+# include <sstream> ...
+int main() {
+  int n = 3, double x = 5, y;
+  std::ostringstream foo; foo << "Facile d'écrire " << n << " " << x << std::endl;
+  std::string s = foo.str(); std::string vals("3.14 334 4.14");
+  std::istringstream fii(vals);
+  fii >> x >> n >> y;
+  return 0; }
+\end{lstlisting}
+ \end{block}
+
+ \begin{exampleblock}{Exercice ( \alert{difficile} ): Gestion d'une bibliographie}
+  \begin{itemize}
+   \item \'Ecrire une structure pouvant contenir une bibliographie primaire ( Titre, auteur, année, éditeur, type );   
+\begin{lstlisting}
+Bibliography bib;
+Bibliography::item book1{title="Vie des douzes césars", author="Sueton", 
+                         year=121, editor="?", type="Biography"};
+add(bib, book1);
+\end{lstlisting}
+  \item Un opérateur permettant d'afficher/écrire un livre sur console/fichier;
+  \item \'Ecrire une fonction qui sauvegarde la bibliographie, une fonction qui la lit;
+  \item Une fonction cherchant l'ouvrage le plus récent/Ancien de la bibliographie.
+\begin{lstlisting}
+auto& old_book = bib_oldest(bib); auto& new_book = bib_newest(bib);
+\end{lstlisting}
+\end{itemize}
+ \end{exampleblock}
+ 
+\end{frame}
+
+
+\begin{frame}[fragile]{Les espaces de nommage}
+\tiny
+\begin{block}{Conflits de noms}
+\begin{itemize}
+\item Deux entités portant le même nom. Exemple : \lstinline$Vecteur$ pour un vecteur soit géométrique soit algébrique;
+\item Ou deux fonctions portant le même nom et la même signature.
+\item En C++, on peut résoudre cela en utilisant des espaces de nommage :
+\begin{itemize}
+\item Soit en utilisant l'espace de nommage dans nos propres headers :
+\begin{lstlisting}
+namespace Geometry {
+    struct Vecteur { std::array<double,3> coefs; };
+}
+namespace Algebra {
+    struct Vecteur { std::vector<double> coefs; };
+}
+\end{lstlisting}
+\item Soit en encapsulant l'inclusion dans l'espace de nommage pour des headers externes :
+\begin{lstlisting}
+namespace Geometry { 
+# include <geometry/vecteur.hpp>
+}
+namespace Algebra {
+# include <algebra/vecteur.hpp>
+}
+\end{lstlisting}
+\end{itemize}
+\end{itemize}
+\end{block}
+\begin{lstlisting}
+Geometry::Vecteur x;
+Algebra::Vecteur  u;
+\end{lstlisting}
+\end{frame}
+
+
+\begin{frame}[fragile]{Utilisation des espaces de nommage}
+\tiny
+\begin{block}{Possibilité}
+\begin{itemize}
+\item Ne pas préciser l'espace de nommage;
+\begin{lstlisting}
+namespace Algebra {
+   struct Vecteur...
+}
+{
+  Algebra::Vecteur u;
+}
+{ // Tout ce qui est dans Algebra sera visible dans l'espace global
+  using namespace Algebra;
+  Vecteur u;
+}
+{ // Seul Algebra::Vecteur est visible dans l'espace de nommage global.
+  using Algebra::Vecteur;
+  Vecteur u;
+}
+\end{lstlisting}
+\item Renommer un espage de nommage
+\begin{lstlisting}
+namespace Numeric {
+    namespace Integration {
+       double quadrature( double x0, double x1, double(*f)(double x));
+    }
+{
+   using NumInteg = Numeric::Integration;
+   ...
+   x = NumInteg::quadrature(0, 2, std::sqrt);
+   ...
+}
+\end{lstlisting}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Espaces de nommage anonymes}
+\tiny
+\begin{block}{Espace de nommage anonyme}
+Espace de nommage non nommé ( ! ) permettant d'avoir qu'une visibilité locale des entités définies à l'intérieur.
+\end{block}
+
+\begin{exampleblock}{Exemple d'utilisation}
+\begin{lstlisting}
+namespace { // <--- Espace de nommage anonyme
+    // L'unique contexte graphique est caché des fichiers externes
+    std::shared_ptr<Graphic::Context> pt_context;
+};
+
+std::shared_ptr<Graphic::Context> get_graphic_context(...) {
+    if (pt_context == nullptr) {
+        pt_context = std::make_shared<Graphic::Context>(...);
+    }
+    return pt_context;
+}
+
+\end{lstlisting}
+\end{exampleblock}
+\end{frame}
+
+\begin{frame}[fragile]{Les expressions constantes}
+\tiny
+\begin{block}{Définition}
+\begin{itemize}
+\item Valeurs évaluées au moment de la compilation;
+\item Peuvent être des valeurs de types définis par l'utilisateur;
+\item On peut utiliser des expressions relativement complexes.
+\end{itemize}
+\includepartcode{constexpr.cpp}{31}{33}
+\end{block}
+
+\begin{block}{Fonctions en expressions constantes}
+\begin{itemize}
+\item Des fonctions peuvent être définies comme expressions constantes pour évaluées ces valeurs;
+\item Elles peuvent être utilisées comme fonction normale ou pour évaluer une expression constante;
+\item Si uniquement pour évaluer une expression constante, pas compilée et n'existera pas dans l'application finale;
+\item Des structures/classes peuvent être évaluées en expressions constantes ainsi que leurs méthodes.
+\end{itemize}
+\includepartcode{constexpr.cpp}{4}{11}
+\includepartcode{constexpr.cpp}{34}{34}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Les expressions constantes...}
+\tiny
+\begin{block}{Règles à suivre pour les fonctions expressions constantes}
+\begin{itemize}
+\item Ne pas utiliser des fonctions de la librairie standard  (sauf extension comme dans gnu );
+\item Ne pas être virtuelles ( voir le chapitre sur l'objet pour les fonctions virtuelles );
+\item Doit retourner un type littérale : type scalaire, tableau de type littéraux, constructeur constexpr et destructeur trivial ( voir chapitre sur l'objet ), void, aggrégat, union, ne pas être volatile;
+\item Pas de boucles en C++11 ( mais possible en C++14 );
+\item Pas de goto, d'assembleur, de définitions de variables non littérales, de variables statiques, de blocs \lstinline$try...catch...$, de variables statiques.
+\end{itemize}
+\end{block}
+\includepartcode{constexpr.cpp}{13}{28}
+\includepartcode{constexpr.cpp}{35}{38}
+\end{frame}
+
+\begin{frame}[fragile]{A vous de jouer !}
+\tiny
+\begin{block}{Gestion de matériaux}
+\begin{itemize}
+\item Matériaux identifiés par leurs c{\oe}fficient de Young $\nu$, température de fusion $T$ et leur résistance électrique $R$;
+\item Sauver/Lire des matériaux dans une base de donnée qu'on pourra charger entièrement en mémoire;
+\item Interroger la base pour connaître les caractéristiques d'un matériau.
+\end{itemize}
+\end{block}
+
+\begin{block}{Exemple de test}
+\begin{lstlisting}
+MDB_Materiaux db;
+ifstream ifich("materiaux.db");
+ifich >> db;
+ifich.close();
+std::cout << db["acier"].young << std::endl;
+std::cout << db["chene"] << std::endl;
+Materiau coton{ .young = 0.1, .T = 100, .R = 50 };
+db["coton"] = coton;
+ofstream ofich("materiaux.db","w");
+ofich << db;
+ofich.close();
+\end{lstlisting}
+\end{block}
+\end{frame}
+\end{document}
