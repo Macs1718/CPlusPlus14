@@ -1,0 +1,18 @@
+set cbrange [0:500]
+#set zrange  [0:600]
+set size square
+set palette defined ( 0 '#000000',\
+                      1 '#00000f',\
+                      2 '#000090',\
+                      3 '#000fff',\
+                      4 '#0090ff',\
+                      5 '#00ffee',\
+                      6 '#20ffee',\
+                      7 '#40ffff',\
+                      8 '#60ffff')
+#set palette color rgbformulae 33,13,10
+set pm3d map
+#set samples 50; set isosamples 50
+set term png size 1280,1024
+set output "Bhudda.png"
+splot "./Bhudda.dat"
