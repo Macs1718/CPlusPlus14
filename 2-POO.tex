@@ -14,7 +14,6 @@
 
 \usepackage{polyglossia}
 
-
 \definecolor{lightblue}{RGB}{0,200,255} 
 \definecolor{paper}{RGB}{245,237,187}
 \definecolor{ocre}{RGB}{243,102,25} % Define the orange color used for highlighting throughout the book
@@ -646,8 +645,8 @@ est automatiquement supprimé;
 
 \begin{frame}[fragile]{Les constructeurs par défauts/supprimés}
 \begin{block}{Constructeurs par défaut}
-Il suffit de déclarer le constructeur sans paramètres, de copie ou de déplacement en spéciant à la fin qu'on prend celui
-défini par défaut par C++ :
+Il suffit de déclarer le constructeur sans paramètres, de copie ou de déplacement en spécifiant à la fin qu'on prend celui
+défini par défaut par C++.
 \end{block}
 \begin{block}{Suppression d'un constructeur déclaré par défaut}
 Si on veut interdire le constructeur de copie, ou sans paramètre, ou de déplacement, il suffit de déclarer ce constructeur
@@ -1403,14 +1402,15 @@ private:
 };
 class Square : public Quadrilatere {
    ...
-   virtual double calculAire() const override {
+   virtual double calculAire() const final {
        return m_length * m_length;
    }
 };\end{lstlisting}
 \end{minipage}\hfill
 \begin{minipage}{0.48\textwidth}
 \begin{itemize}
-\item Le mot clef \lstinline$override$ permet de s'assurer qu'on redéfinit bien une méthode virtuelle de la classe de base;
+\item \alert{\texttt{override}} : Vérifie qu'on redéfinit bien méthode virtuelle de la classe mère;
+\item \alert{\texttt{final}} : Idem qu'override + interdiction redéfinition dans classes filles;
 \item Ça marche ! :
 \begin{lstlisting}
 double addAire( const Quadrilatere& a, 

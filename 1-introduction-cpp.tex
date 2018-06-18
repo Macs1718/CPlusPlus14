@@ -116,7 +116,7 @@
   \item \textbf{2011} : $2^{e}$ normalisation  : refonte du langage
   \item \textbf{2014} : $3^{e}$ normalisation  : corrections mineures
   \item \textbf{2017} : $4^{e}$ normalisation  : politiques d'exécutions, \ldots;
-  \item \textbf{2020} : $5^{e}$ normalisation en cours de proposition.
+  \item \textbf{2020} : $5^{e}$ normalisation en cours de proposition: concepts, \ldots
 \end{itemize}
 \end{block}
 
@@ -127,6 +127,7 @@
 \end{block}
 \end{frame}
 
+\subsection{Pour commencer}
 
 \begin{frame}[fragile]{Aperçu du langage}
 \tiny
@@ -169,7 +170,7 @@ int main (int nargs, const char* argv[]!\tikz[remember picture] \node[](margs){}
 \begin{block}{Syntaxe de base}
 \begin{itemize}
  \item Toutes les instructions finissent par un \lstinline$;$
- \item Le début et la fin d'une fonction ( dont le main ) sont encadrées par \lstinline${}$
+ \item Le début et la fin d'une fonction/bloc d'instruction ( dont le main ) sont encadrées par \lstinline${}$
  \item Un exécutable doit toujours définir un \lstinline$main$ mais par une bibliothèque
  \item Une fonction peut ne rien retourner en déclarant son type de retour comme \lstinline$void$
 \end{itemize}
@@ -204,6 +205,8 @@ nm -C bonjour.exe
 \end{itemize}
 \end{block}
 \end{frame}
+
+\subsection{Variables et types de base}
 
 \begin{frame}[fragile]{Variables entières}
  \tiny
@@ -272,6 +275,7 @@ nm -C bonjour.exe
 \end{block}
 \end{frame}
 
+
 \begin{frame}[fragile]{Chaînes de caractère}
 \tiny
 \begin{block}{Déclarations}
@@ -281,7 +285,7 @@ nm -C bonjour.exe
 \lstinline$std::string str;$
 \end{itemize}
 \end{block}
-\begin{block}{Opérations permises}
+\begin{block}{Opérations permises avec \verb@std::string@}
 \begin{itemize}
 \item Concaténation chaîne de caractères : \lstinline$str3 = str1 + str2;$
 \item Comparaison, insertion, recherche, etc\ldots
@@ -290,6 +294,21 @@ nm -C bonjour.exe
 \item Existe un type brute n'interprétant pas les caractères. Délimités par trois caractères + ( et ) + les trois caractères ;
 \end{itemize}
 \includepartcode{declarations.cpp}{60}{73}
+\end{block}
+
+\end{frame}
+
+\begin{frame}[fragile]{Exercice}
+\scriptsize
+
+\begin{block}{Résolution équation second degré}
+\underline{Problème} : Résoudre une équation du type : $ax^{2}+bx+c=0$
+\begin{itemize}
+\item Dans un premier temps, on fixe les valeurs de $a,b$ et $c$ dans le programme principal;
+\item Dans un deuxième temps, les valeurs $a,b$ et $c$ sont passés en argument de l'exécutable;
+\item Résoudre le problème à l'aide des réels puis des complexes;
+\item Afficher le(s) résultat(s) à l'écran.
+\end{itemize}
 \end{block}
 
 \end{frame}
@@ -305,7 +324,7 @@ nm -C bonjour.exe
 \item Mais possible dans un bloc et un sous-bloc et peuvent être de types différents;
 \item Tant qu'une variable n'est pas déclarée dans un bloc, c'est la variable du bloc
 supérieur ( ou au dessus ) qui est visible;
-\item Une variable est détruite et son espace libéré à la sortie du bloc où elle a été déclarée;
+\item Une variable est \textbf{détruite} et son espace libéré à la sortie du bloc où elle a été déclarée;
 \end{itemize}
 \end{block}
 \includepartcode{visibilite.cpp}{3}{14}
@@ -900,20 +919,20 @@ f(arr);
 \begin{block}{Passage par référence}
 Utiliser dans la signature d'une fonction pour
 \begin{itemize}
-\item Pouvoir modifier la variable passée en paramêtre;
-\item Éviter de copier la variable passée en paramêtre.
+\item Pouvoir modifier la variable passée en paramètre;
+\item \textbf{Éviter de copier} la variable passée en paramètre.
 \end{itemize}
 Inconvénients :
 \begin{itemize}
 \item Impossible de passer directement une valeur non stockée dans une variable;
-\item Variable passée en paramêtre modifiable pour éviter une copie.
+\item Variable passée en paramètre modifiable pour éviter une copie.
 \end{itemize}
 \end{block}
 
 \begin{block}{Passage par référence constante}
 Rajout du mot clef \lstinline{const} dans la signature
 \begin{itemize}
-\item Éviter une copie sans rendre modifiable la variable passée en paramêtre;
+\item Éviter une copie sans rendre modifiable la variable passée en paramètre;
 \item Permet de passer des valeurs.
 \end{itemize}
 \end{block}
@@ -963,7 +982,7 @@ Retourne un "alias" sur une variable qui doit être
 \item Un paramètre de la fonction;
 \item une variable globale.
 \end{itemize}
-\alert{Ne jamais retourner une variable locale par référence !}
+\alert{Ne jamais retourner une variable locale par référence sous peine de corruption mémoire !}
 \end{block}
 \end{frame}
 
@@ -985,7 +1004,7 @@ int main() { ...
 \end{block}
 
 \begin{block}{Paramètres par défaut}
-Paramètres optionels. Toujours derniers paramètres. Uniquement définis à la déclaration.
+Paramètres optionnels. Toujours derniers paramètres. Uniquement définis à la déclaration.
 \begin{lstlisting}
 double daxpy( int n,const double* x,double* y,int incx=1, int incy=1);
 ...
@@ -1086,6 +1105,19 @@ std::istream& operator >> ( std::istream& inp, std::vector<double>& u ) {
 \end{tabular}
 \end{frame}
 
+\begin{frame}[fragile]{Exercice sur les opérateurs}
+\small
+
+\begin{block}{Petite bibliothèque de vecteurs 3D}
+\begin{itemize}
+\item Créer une structure \verb@vecteur3D@ contenant trois réels $x,y$ et $z$;
+\item Créer un opérateur de sortie du vecteur 3D sous forme \verb@(x, y, z)@;
+\item Créer des opérateurs d'addition, de produit scalaire et de produit vectoriel; 
+\item Tester le tout.
+\end{itemize}
+\end{block}
+
+\end{frame}
 
 \begin{frame}[fragile]{Les exceptions}
 \tiny
@@ -1208,6 +1240,18 @@ try {
 \end{lstlisting}
 \end{minipage}
 \end{block} 
+\end{frame}
+
+\begin{frame}[fragile]{Suite de l'exercice sur les vecteurs 3D}
+\small
+\begin{block}{Normalisation des vecteurs}
+\begin{itemize}
+\item Créer une fonction calculant la norme cartésienne du vecteur;
+\item Créer une fonction normalisant un vecteur et renvoyant une exception si la norme
+      de ce vecteur est inférieur à $10^{-14}$;
+\item Faire un test avec un vecteur non nul et un vecteur nul en rattrapant les exceptions si besoin.
+\end{itemize}
+\end{block}
 \end{frame}
 
 \begin{frame}[fragile]{Les entrées/sorties (\texttt{fstream})}
