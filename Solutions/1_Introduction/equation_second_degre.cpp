@@ -23,6 +23,6 @@ int main()
     double x1 = (-b-std::sqrt(delta))/(2*a);
     double x2 = (-b+std::sqrt(delta))/(2*a);
     std::cout << "Les solutions sont " << x1
-              << " et " << x2 << std::endl;
+              << "  et " << x2 << std::endl;
     return EXIT_SUCCESS;
 }
