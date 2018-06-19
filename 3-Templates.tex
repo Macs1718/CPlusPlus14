@@ -104,7 +104,7 @@ et \lstinline$>$, suivi de la définition de la fonction ou de la classe patron;
 \end{frame}
 
 \begin{frame}[fragile]{Généricité fonctionnelle}
-\tiny
+\small
 \begin{block}{Généricité fonctionnelle en C++}
 \begin{itemize}
 \item Définie un modèle de fonction ou de méthode de classe;
@@ -121,6 +121,13 @@ int main() {
 \item \lstinline$K$ est le paramètre du template : \lstinline$typename$ précise qu'ici $K$ est un paramètre représentant un type
 de variable;
 \item Dans ce cas simple, lors de l'instanciation ( et de l'appel ) d'une fonction à partir du template, le paramètre \lstinline$K$ déduit du type de paramètre passé à la fonction;
+\end{itemize}
+\end{block}
+\end{frame}
+\begin{frame}[fragile]{Passer plusieurs paramètres template}
+\small
+\begin{block}{Généralisation de l'exemple précédent}
+\begin{itemize}
 \item Cependant, \lstinline$max_val(1.3.5)$ ne compilera pas, car types différents, idem pour \lstinline$max_val("tintin","milou")$ ( \lstinline$char[6]$ et \lstinline$char[5]$ )
 \item On peut passer deux paramètres types :
 \begin{lstlisting}
@@ -134,20 +141,19 @@ template<typename K1,typename K2> auto max_val(const K1& a,const K2& b){return (
 \end{frame}
 
 \begin{frame}[fragile]{Template et surcharge de fonctions}
-\tiny
+\small
 \begin{block}{Surcharge de fonctions}
 \begin{itemize}
 \item On a vu que la fonction template \lstinline$max_val$ ne renvoie pas la bonne chaîne de caractère car n'effectue pas la bonne comparaison;
 \item C++ autorise qu'on définisse la fonction \lstinline$max_value$ pour les chaînes de caractère de type \lstinline$char*$ :
 \begin{lstlisting}
-std::string max_value( const char* s1, const char* s2 )
-{
+std::string max_value( const char* s1, const char* s2 ) {
     if ( strcmp(s1,s2) > 0 ) return std::string(s1); else return std::string(s2);
 }
 \end{lstlisting}
 \item C++ n'instanciera pas une fonction template si une fonction non template existe déjà pour un ou des types de variables données;
 \item On parle alors de {\bf\color{red}spécialisation template};
-\item Dans notre cas, la fonction \lstinline$max_value$, grâce à la spécialisation, renvoie bien maintenant la bonne chaîne de caractère...
+\item grâce à la spécialisation, la fonction \lstinline$max_value$ renvoie bien maintenant la bonne chaîne de caractère...
 \item \textbf{\underline{Remarque}} : Bien que la fonction soit spécialisée pour des \lstinline$const char*$, elle est également appelée pour des \lstinline$char[5]$ ou \lstinline$char[6]$ car ces types sont trivialement convertissables en pointeur ( sans créer une variable temporaire pour la conversion ).
 \end{itemize}
 \end{block}
@@ -206,7 +212,7 @@ ce dernier réclame deux paramètres templates ( un pour le type de valeur conte
 \end{frame}
 
 \begin{frame}[fragile]{Spécialisation template}
-\tiny
+\small
 \begin{block}{Spécialisation template}
 Possibilité de spécialiser un template pour des valeurs particulières de ses paramètres :
 \begin{lstlisting}
@@ -218,7 +224,9 @@ std::cout << fact<10>() << std::endl; // L'évaluation de la factorielle se fait
 \textbf{\underline{Remarque}} : l'instanciation de la fonction template oblige ici à passer les paramètres entre les symboles
 \lstinline$<$ et \lstinline$>$ car l'entier ne peut se déduire des paramètres passés à la fonction templatée.
 \end{block}
-
+\end{frame}
+\begin{frame}[fragile]{Spécialisation partielle}
+\small
 \begin{block}{Spécialisation partielle}
 Supposons qu'on veuille calculer la dérivée directionnelle sur un corps $K$ d'une fonction $f$.
 %\[
@@ -241,7 +249,7 @@ template<typename Func> double df_s_dh(const Func& f,const double& h,const doubl
 \end{frame}
 
 \begin{frame}[fragile]{Spécialisation template et constexpr ( C++14 )}
-\tiny
+\small
 \begin{block}{Template et constexpr}
 \begin{itemize}
 \item À partir de C++14, il est possible de templater les expressions constantes
@@ -258,7 +266,7 @@ std::cout << factoriel<double,20> << std::endl;
 \end{frame}
 
 \begin{frame}[fragile]{Spécialisation template : principe de fonctionnement}
-\tiny
+\small
 \begin{block}{Principe d'instanciation d'un compilateur pour les spécialisations template}
 \begin{itemize}
 \item Le compilateur recherche si une fonction sans paramètre template est définie et l'instancie le cas échéant;
@@ -323,8 +331,8 @@ Les fonctions templatées ne sont générées qu'une fois pour une valeur donné
 \end{exampleblock}
 \end{frame}
 
-\begin{frame}[fragile]{Généricté structurelle}
-\tiny
+\begin{frame}[fragile]{Généricité structurelle}
+\scriptsize
 \begin{block}{Déclaration d'une structure template}
 \begin{itemize}
 \item Déclaration et définition semblables à celles d'une fonction template
@@ -362,7 +370,7 @@ template<typename K> K A<K>::func( const K& k ) const { ... }
 \end{frame}
 
 \begin{frame}[fragile]{Organisation, production de code avec les templates}
-\tiny
+\scriptsize
 \begin{block}{Problématique}
 \begin{itemize}
 \item À chaque instanciation d'une classe template, on génère le code adéquat;
@@ -512,7 +520,7 @@ template<typename K> class Wrapper : public Base_wrapper
 \end{frame}
 
 \begin{frame}[fragile]{Référence universelle}
-\tiny
+\scriptsize
 \begin{block}{Référence universelle}
 \begin{lstlisting}
 Wrapper( K&& a1 ) : m_obj(a1) {}
@@ -534,7 +542,7 @@ Wrapper( K&& a1 ) : m_obj(std::forward<K>(a1)) {}
 \end{frame}
 
 \begin{frame}[fragile]{Méthodes templates}
-\tiny
+\scriptsize
 \begin{block}{Template de méthodes}
 \begin{itemize}
  \item Dans une classe, on peut définir des méthodes template;
@@ -565,7 +573,7 @@ class Matrix {
 \end{frame}
 
 \begin{frame}[fragile]{Exercices}
-\tiny
+\scriptsize
 \begin{exampleblock}{Matrice de rotation 2D}
 \'Ecrire une classe représentant une rotation 2D d'angle $\alpha$ ( le corps de base pouvant être réel ou complexe );
 \end{exampleblock}
